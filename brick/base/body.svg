@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-20 -40 280 300" width="560" height="600">
+<defs>
+<clipPath id="cbtemplate"><path d="M84 64 H156 A54 54 0 0 1 210 118 V130 A54 54 0 0 1 156 184 H84 A54 54 0 0 1 30 130 V118 A54 54 0 0 1 84 64 Z"></path></clipPath>
+<clipPath id="cbtemplatel"><rect x="68" y="160" width="36" height="44" rx="6"></rect></clipPath>
+<clipPath id="cbtemplater"><rect x="136" y="160" width="36" height="44" rx="6"></rect></clipPath>
+<clipPath id="cbtemplateal"><rect x="14" y="122" width="26" height="38" rx="12" transform="rotate(22 27 141)"></rect></clipPath>
+<clipPath id="cbtemplatear"><rect x="200" y="122" width="26" height="38" rx="12" transform="rotate(-22 213 141)"></rect></clipPath>
+</defs><path d="M84 64 H156 A54 54 0 0 1 210 118 V130 A54 54 0 0 1 156 184 H84 A54 54 0 0 1 30 130 V118 A54 54 0 0 1 84 64 Z" fill="TOKEN_SHADOW"></path>
+<g clip-path="url(#cbtemplate)"><path transform="translate(0,-16)" d="M84 64 H156 A54 54 0 0 1 210 118 V130 A54 54 0 0 1 156 184 H84 A54 54 0 0 1 30 130 V118 A54 54 0 0 1 84 64 Z" fill="TOKEN_MAIN"></path></g>
+<path d="M84 64 H156 A54 54 0 0 1 210 118 V130 A54 54 0 0 1 156 184 H84 A54 54 0 0 1 30 130 V118 A54 54 0 0 1 84 64 Z" fill="none" stroke="#4a2c22" stroke-width="5" stroke-linejoin="round"></path>
+<path d="M166 74 Q184 78 194 94" fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round" opacity="0.6"></path>
+<rect x="78" y="78" width="28" height="8" rx="4" fill="#4a2c22" transform="rotate(12 92 82)"></rect>
+<rect x="134" y="78" width="28" height="8" rx="4" fill="#4a2c22" transform="rotate(-12 148 82)"></rect>
+
+
+<path d="M102 150 q18 12 36 -2" fill="none" stroke="#4a2c22" stroke-width="5" stroke-linecap="round"></path>
+</svg>

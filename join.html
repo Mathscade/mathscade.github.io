@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><style id="mc-ipad">html{-webkit-text-size-adjust:100%;text-size-adjust:100%;touch-action:manipulation}body{touch-action:manipulation;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}*{touch-action:manipulation}input,select,textarea{font-size:max(16px,1em)!important}</style><script id="mc-ipad-js">(function(){var p=function(e){e.preventDefault();};document.addEventListener("gesturestart",p,{passive:false});document.addEventListener("gesturechange",p,{passive:false});document.addEventListener("dblclick",p,{passive:false});document.addEventListener("touchmove",function(e){if(e.scale!==undefined&&e.scale!==1)e.preventDefault();},{passive:false});var last=0;document.addEventListener("touchend",function(e){var n=Date.now(),t=e.target;if(n-last<350&&e.changedTouches.length===1&&!(t.closest&&t.closest("input,textarea,select"))){e.preventDefault();var b=t.closest&&t.closest("button,a,[role=button],label");if(b)b.click();}last=n;},{passive:false});var fix=function(){var v=window.visualViewport;if(v&&v.scale>1.01){var m=document.querySelector("meta[name=viewport]");if(m){var c=m.getAttribute("content");m.setAttribute("content",c+",width=device-width");setTimeout(function(){m.setAttribute("content",c);},60);}}};if(window.visualViewport)visualViewport.addEventListener("resize",function(){setTimeout(fix,400);});document.addEventListener("gestureend",function(){setTimeout(fix,200);});})();</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Mathcade</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Lilita+One&family=Baloo+2:wght@400;500;600;700;800&family=Chakra+Petch:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Student front door: one job, type the game code. Everything else lives behind the teacher's screen. */
+:root{
+  --bg:#13233A; --bar:#1D3352; --tile:rgba(255,255,255,.07); --sun:#FFE36B; --sunEdge:#D9A21F; --cream:#F6F1E7; --mist:#B9D3DA;
+  --ink:#1E2433; --hot:#FF5A3C; --go:#2EC4B6; --goEdge:#1A8C82;
+  --display:'Bungee',Impact,'Arial Black',sans-serif; --title:'Chakra Petch','Baloo 2','Trebuchet MS',system-ui,sans-serif; --body:'Baloo 2','Nunito',ui-rounded,'Segoe UI',system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--cream);font-family:var(--body);line-height:1.36;overflow:hidden;display:flex;flex-direction:column}
+:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
+/* top bar */
+.bar{position:relative;z-index:3;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;background:var(--bar);box-shadow:0 4px 0 rgba(0,0,0,.25);
+  padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));padding-top:calc(10px + env(safe-area-inset-top,0px))}
+.bar .brand{font-family:var(--display);font-size:1.35rem;color:var(--sun);text-decoration:none;letter-spacing:.04em;text-shadow:0 3px 0 #B4261C;justify-self:start}
+.bar h1{margin:0;font-family:var(--title);font-weight:700;font-size:1.45rem;color:var(--cream);white-space:nowrap}
+.bar .right{justify-self:end;display:flex;align-items:center;gap:10px}
+.linkbtn{font:inherit;font-weight:900;font-size:1rem;color:var(--cream);background:none;border:0;cursor:pointer;text-decoration:underline;text-underline-offset:4px;padding:6px 4px}
+.chip{display:inline-flex;align-items:center;gap:8px;background:#FFF8EE;color:var(--ink);border:0;border-radius:12px;padding:6px 10px;font:inherit;font-weight:900;cursor:pointer;max-width:240px}
+.chip .coins{display:inline-flex;align-items:center;gap:3px;background:#F6E7D3;border-radius:8px;padding:2px 7px}
+/* floating maths tiles in the background */
+.field{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.field i{position:absolute;display:grid;place-items:center;border-radius:22%;background:var(--tile);color:rgba(255,255,255,.14);font-family:var(--display);font-style:normal;
+  animation:drift linear infinite}
+@keyframes drift{from{transform:translateY(110vh) rotate(var(--r0))}to{transform:translateY(-30vh) rotate(var(--r1))}}
+/* centre */
+main{position:relative;z-index:2;flex:1;display:grid;place-items:center;padding:16px max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.centre{display:flex;flex-direction:column;align-items:center;gap:22px;width:min(520px,100%)}
+.logo{width:min(480px,100%);height:auto;display:block;filter:drop-shadow(0 6px 0 rgba(0,0,0,.25))}
+form{display:flex;gap:10px;width:min(420px,100%)}
+form input{flex:1;min-width:0;font-family:var(--title);font-weight:700;font-size:clamp(1.5rem,6vw,2rem);letter-spacing:.14em;text-transform:uppercase;text-align:center;color:var(--ink);
+  background:#fff;border:0;border-radius:14px;padding:12px 10px;box-shadow:0 6px 0 #C9D3D7}
+form input::placeholder{font-family:var(--title);letter-spacing:.02em;text-transform:none;color:#8A97A6;font-weight:700}
+form button{flex:none;width:72px;border:0;border-radius:14px;background:var(--sun);color:#4A2606;box-shadow:0 6px 0 var(--sunEdge);cursor:pointer;display:grid;place-items:center}
+form button svg{width:30px;height:30px}
+form button:active,form input:focus{transform:translateY(2px)}
+form button[disabled]{opacity:.6;cursor:default}
+.msg{min-height:1.4em;margin:-6px 0 0;font-weight:900;color:#FFB4A6;text-align:center}
+.slog{font:inherit;font-weight:900;font-size:1rem;border:0;border-radius:12px;padding:9px 18px;background:var(--sun);color:#4A2606;box-shadow:0 4px 0 var(--sunEdge);cursor:pointer}
+.slog:active{transform:translateY(2px)}
+.tlog{font-weight:800;font-size:.9rem;color:var(--mist);text-decoration:none;border:2px solid rgba(255,255,255,.18);border-radius:12px;padding:7px 12px}
+.tlog:hover{color:var(--cream);border-color:rgba(255,255,255,.4)}
+@media (max-width:520px){.tlog{display:none}}
+.shake{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-8px)}50%{transform:translateX(8px)}75%{transform:translateX(-4px)}}
+@media (max-width:520px){.bar{grid-template-columns:auto 1fr}.bar h1{display:none}}
+/* ---------- logged-in home (Draft D) ---------- */
+body.home{overflow:auto;overflow-x:hidden}
+body.home .bar{grid-template-columns:1fr auto}
+body.home .bar h1{display:none}
+#home{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;align-items:stretch;place-items:stretch;gap:18px;width:100%;max-width:1180px;margin:0 auto;
+  padding:18px max(16px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+#home[hidden],#out[hidden]{display:none}
+.lo{font:inherit;font-weight:900;font-size:.95rem;color:var(--cream);background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.18);border-radius:12px;padding:7px 12px;cursor:pointer}
+.band{display:flex;align-items:center;gap:18px 26px;flex-wrap:wrap;background:var(--sun);color:#4A2606;border-radius:24px;box-shadow:0 8px 0 var(--sunEdge);padding:18px 22px}
+.band h2{margin:0;font-family:var(--title);font-weight:700;font-size:clamp(1.6rem,3.2vw,2.3rem);line-height:1.05;flex:1 1 220px}
+.band form{flex:1 1 380px;width:auto;max-width:560px;min-width:0}
+.band form input{min-width:0}
+.band form input{font-size:clamp(1.6rem,3.4vw,2.2rem);padding:14px 12px;box-shadow:0 6px 0 var(--sunEdge);border:3px solid #4A2606}
+.band form button{width:auto;padding:0 26px;background:var(--ink);color:var(--sun);box-shadow:0 6px 0 #0B111C;font-family:var(--title);font-size:1.5rem;display:flex;gap:8px;align-items:center;font-weight:700}
+.band .msg{flex-basis:100%;margin:-6px 0 0;color:#9B1C10;text-align:left;min-height:0}
+.band .msg:empty{display:none}
+.hgrid{display:grid;grid-template-columns:minmax(300px,5fr) 7fr;gap:18px;flex:1;min-height:0}
+.player{background:var(--bar);border-radius:24px;box-shadow:0 8px 0 rgba(0,0,0,.25);padding:16px;display:flex;flex-direction:column;gap:10px;min-height:440px;
+  background-image:radial-gradient(circle at 50% 58%,#2C4C7A 0,#24406A 38%,#1D3352 70%)}
+.ptop{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.pname{font-family:var(--title);font-size:clamp(1.5rem,2.6vw,2rem);line-height:1.1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
+.pname .mc-nm{max-width:100%}
+.ctile{display:inline-flex;align-items:center;gap:6px;background:#FFF8EE;color:var(--ink);border-radius:12px;padding:6px 11px;font-weight:900;font-size:1.1rem;box-shadow:0 4px 0 rgba(0,0,0,.25);flex:none}
+.stage{flex:1;min-height:250px;position:relative;touch-action:manipulation}
+.stage::after{content:"";position:absolute;left:22%;right:22%;bottom:5%;height:7%;border-radius:50%;background:rgba(0,0,0,.25);z-index:-1}
+.ltabs{display:flex;justify-content:center;gap:6px;align-items:stretch;margin-top:4px}
+.ltab{display:grid;place-items:center;gap:3px;flex:1 1 0;max-width:76px;height:62px;border-radius:16px;background:#24406A;color:#B9D3DA;border:2px solid #34588C;text-decoration:none;box-shadow:0 4px 0 rgba(0,0,0,.25);transition:transform .12s,background .15s}
+.ltab svg{width:22px;height:22px}
+.ltab span{font-size:.68rem;font-weight:800;line-height:1}
+.ltab:hover,.ltab:focus-visible{background:var(--go);color:#0E2A33;border-color:var(--go);transform:translateY(-3px)}
+.rcol{display:grid;grid-template-rows:1fr auto;gap:18px;min-height:0}
+.tiles{display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:1fr;gap:18px}
+.tile{position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;gap:4px;min-height:150px;border-radius:24px;padding:18px 20px;text-decoration:none;color:#22140A;
+  box-shadow:0 8px 0 var(--edge)}
+.tile:active{transform:translateY(3px);box-shadow:0 5px 0 var(--edge)}
+.tile.shop{background:#FF9F2E;--edge:#C46F12}
+.tile.locker{background:#2EC4B6;--edge:#1A8C82;color:#0E2A33}
+.tile.boards{background:#8A4FD8;--edge:#5E2FA8;color:#fff}
+.tile.scores{background:#FF5A3C;--edge:#B4261C;color:#22140A}
+.tile svg{position:absolute;right:14px;top:14px;height:min(58%,110px);width:auto;filter:drop-shadow(0 5px 0 rgba(0,0,0,.18))}
+.tile b{position:relative;font-family:var(--title);font-weight:700;font-size:clamp(1.5rem,2.6vw,2.1rem);line-height:1}
+.tile span{position:relative;font-weight:900;font-size:.98rem;max-width:15em;line-height:1.2}
+.links:empty{display:none}
+.links{display:flex;gap:12px;flex-wrap:wrap}
+.links a{flex:1 1 160px;display:flex;align-items:center;gap:10px;background:var(--bar);color:var(--cream);text-decoration:none;font-weight:900;border-radius:16px;padding:14px 16px;box-shadow:0 5px 0 rgba(0,0,0,.25)}
+.links a svg{width:26px;height:26px;flex:none}
+@media (max-width:900px) and (orientation:portrait), (max-width:760px){
+  .hgrid{grid-template-columns:1fr}
+  .player{min-height:0}
+  .stage{min-height:min(52vh,440px)}
+  .tile{min-height:150px}
+}
+@media (max-width:520px){.bar .right{gap:6px;min-width:0}.bar .right .me,.bar .right button:not(.lo){min-width:0;max-width:52vw}.lo{padding:6px 8px;font-size:.85rem;white-space:nowrap}.tiles{grid-template-columns:1fr}.tile{min-height:130px}.band form{flex-basis:100%}.band form button{padding:0 14px;font-size:1.2rem}}
+
+@media (prefers-reduced-motion:reduce){.field i{animation:none;display:none}.shake{animation:none}}
+
+/* waiting for the teacher to start: just the student's Brick and a waiting card */
+.waitband,.waitcard{display:none}
+body.waiting .band form,body.waiting .band #jh,body.waiting .band .msg,body.waiting .tiles,body.waiting #hlinks,body.waiting .ltabs{display:none!important}
+body.waiting .waitband{display:flex;align-items:center;gap:14px;flex:1;flex-wrap:wrap}
+body.waiting .waitcard{display:flex}
+.waitband b{font-family:var(--title);font-weight:700;font-size:clamp(1.6rem,3.2vw,2.3rem);line-height:1.05}
+.waitband .wcode{font-family:var(--title);font-weight:700;letter-spacing:.12em;background:var(--ink);color:var(--sun);border-radius:12px;padding:6px 12px;font-size:1.2rem}
+.waitband .wleave{margin-left:auto;font:inherit;font-weight:900;border:0;border-radius:12px;padding:10px 16px;background:#FFF8EE;color:#4A2606;cursor:pointer;box-shadow:0 4px 0 var(--sunEdge)}
+.waitcard{flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px;background:#1D3352;border-radius:24px;padding:28px 22px;box-shadow:0 8px 0 rgba(0,0,0,.3);min-height:260px}
+.waitcard .wtitle{font-family:var(--title);font-size:clamp(1.8rem,3.4vw,2.6rem);color:var(--sun);line-height:1.1;font-weight:700}
+.waitcard .wgame{font-weight:900;font-size:1.2rem;color:#F6F1E7}
+.waitcard .wteam{display:inline-block;border-radius:999px;padding:6px 16px;font-weight:900;color:#fff}
+.waitcard .whint{font-weight:800;color:#B9D3DA}
+.wdots::after{content:'';animation:wdots 1.2s steps(4) infinite}
+@keyframes wdots{0%{content:''}25%{content:'.'}50%{content:'..'}75%{content:'...'}}
+.wpulse{width:84px;height:84px;border-radius:50%;background:var(--sun);display:grid;place-items:center;animation:wpulse 1.6s ease-in-out infinite}
+.wpulse svg{width:44px;height:44px}
+@keyframes wpulse{50%{transform:scale(1.12)}}
+@media (prefers-reduced-motion:reduce){.wpulse{animation:none}.wdots::after{animation:none;content:'...'}}
+
+/* ---------- warm-up game while waiting: Carnival Sharpshooter + prize board ---------- */
+.wnext,.wteam2{display:none}
+body.wplay .wnext{display:inline-flex;align-items:baseline;gap:6px;font-weight:900;font-size:1.05rem}
+body.wplay .wnext b{font-family:var(--title);font-size:1.2rem}
+body.wplay .wteam2:not([hidden]){display:inline-block;border-radius:999px;padding:4px 12px;font-weight:900;color:#fff;font-size:.95rem}
+#wplay{display:none}
+body.wplay{overflow:auto}
+body.wplay #home{min-height:0;gap:12px;padding-top:12px}
+body.wplay .band{padding:10px 16px;border-radius:18px;box-shadow:0 6px 0 var(--sunEdge)}
+body.wplay .waitband b{font-size:1.5rem}
+body.wplay .waitband .wcode{font-size:1.05rem}
+body.wplay .hgrid{display:none}
+body.wplay #wplay{display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:12px;flex:1;min-height:440px}
+.wframe{position:relative;min-width:0;min-height:0;border-radius:18px;overflow:hidden;background:#2A140C;box-shadow:0 6px 0 rgba(0,0,0,.3);touch-action:manipulation}
+.wframe iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;background:#2A140C}
+.wload{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:#F6EFDF;font-weight:900;font-size:1.15rem;background:#2A140C;z-index:1;padding:16px}
+body.wready .wload{display:none}
+/* the prize board: a little carnival sign with marquee bulbs */
+.prizes{position:relative;display:flex;flex-direction:column;gap:8px;min-height:0;background:#C9302C;color:#FFF6E3;border-radius:18px;padding:14px 12px 12px;
+  box-shadow:0 6px 0 #7A1B17,inset 0 0 0 4px #FFC23D;font-family:'Lilita One',var(--body);overflow:hidden;
+  background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.07) 0 18px,transparent 18px 36px)}
+.prizes::before{content:"";position:absolute;left:10px;right:10px;top:6px;height:6px;background:radial-gradient(circle,#FFE36B 2.5px,transparent 3px) 0 0/16px 6px repeat-x;animation:bulbs 1s steps(2) infinite}
+@keyframes bulbs{50%{filter:brightness(.55)}}
+.pz-head{text-align:center;font-size:1.55rem;letter-spacing:.06em;color:#FFE36B;text-shadow:0 3px 0 #7A1B17;line-height:1;margin-top:4px}
+.pz-score{display:flex;align-items:baseline;justify-content:center;gap:8px;background:#2A140C;border-radius:12px;padding:6px 10px}
+.pz-score small{font-family:var(--body);font-weight:900;font-size:.85rem;color:#F6D9A8}
+.pz-score b{font-size:1.7rem;color:#FFE36B;font-weight:400;font-variant-numeric:tabular-nums}
+.pz-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.pz-list li{display:flex;align-items:center;justify-content:space-between;gap:6px;background:#FFF6E3;color:#5A1712;border-radius:10px;padding:6px 10px;font-size:1.05rem;
+  transition:transform .2s,background .2s;border:2px solid transparent}
+.pz-list li span{font-variant-numeric:tabular-nums}
+.pz-list li b{display:inline-flex;align-items:center;gap:4px;font-weight:400}
+.pz-list li.got{background:#F3D9B4;color:#8A5A3A}
+.pz-list li.on{background:#FFC23D;color:#3A1A06;border-color:#FFF6E3;transform:scale(1.05);box-shadow:0 0 0 3px #FFE36B,0 4px 12px rgba(0,0,0,.35);animation:pzGlow 1.2s ease-in-out infinite}
+@keyframes pzGlow{50%{box-shadow:0 0 0 3px #FFE36B,0 0 18px #FFE36B}}
+.pz-note{margin:0;font-family:var(--body);font-weight:800;font-size:.86rem;line-height:1.25;color:#FFF0D6;text-align:center}
+/* portrait iPad: the prize board becomes a strip above the booth */
+@media (orientation:portrait),(max-width:760px){
+  body.wplay #wplay{grid-template-columns:1fr;grid-template-rows:auto minmax(380px,1fr)}
+  .prizes{order:-1;flex-direction:row;flex-wrap:wrap;align-items:center;padding:14px 10px 10px;gap:6px 8px}
+  .pz-head{font-size:1.3rem;margin:0}
+  .pz-score{padding:4px 10px}.pz-score b{font-size:1.4rem}
+  .pz-list{flex-direction:row;flex:1 1 100%;gap:6px}
+  .pz-list li{flex:1 1 0;flex-direction:column;gap:0;padding:5px 4px;text-align:center;font-size:.98rem;min-width:0}
+  .pz-list li.on{transform:scale(1.06)}
+  .pz-note{flex:1 1 200px;text-align:left}
+}
+/* the countdown when the teacher presses Start */
+.wcount{position:fixed;inset:0;z-index:50;display:none;place-items:center;background:radial-gradient(circle at 50% 40%,#24406A,#13233A 70%);padding:16px;text-align:center}
+.wcount.on{display:grid}
+.wcount .wc-in{display:flex;flex-direction:column;align-items:center;gap:10px;max-width:640px}
+.wcount .wc-t{font-family:var(--title);font-weight:700;font-size:clamp(1.6rem,4vw,2.4rem);color:var(--cream)}
+.wcount .wc-n{font-family:var(--display);font-size:clamp(7rem,22vw,12rem);line-height:1;color:var(--sun);text-shadow:0 8px 0 #B4261C}
+.wcount .wc-n.pop{animation:wcPop .5s ease-out}
+@keyframes wcPop{from{transform:scale(1.4);opacity:.3}}
+.wcount .wc-r{min-height:3.2em;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;font-weight:900;font-size:clamp(1.2rem,3vw,1.7rem);color:#FFF8EE;
+  background:#C9302C;border-radius:18px;padding:10px 20px;box-shadow:0 6px 0 #7A1B17,inset 0 0 0 3px #FFC23D;font-family:'Lilita One',var(--body)}
+.wcount .wc-r:empty{visibility:hidden}
+.wcount .wc-r b{color:#FFE36B;font-weight:400;display:inline-flex;align-items:center;gap:6px}
+@media (prefers-reduced-motion:reduce){.prizes::before,.pz-list li.on,.wcount .wc-n.pop{animation:none}}
+</style>
+</head>
+<body>
+<header class="bar">
+  <a class="brand" href="index.html">MATHCADE</a>
+  <h1>Join a Game</h1>
+  <div class="right" id="who"></div>
+</header>
+<div class="field" id="field" aria-hidden="true"></div>
+<main id="out">
+  <div class="centre">
+    <svg class="logo" viewBox="0 0 640 170" role="img" aria-label="Mathcade">
+      <defs><linearGradient id="mcFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE36B"/><stop offset="1" stop-color="#FF8A1F"/></linearGradient>
+      <path id="mcArc" d="M40 150 Q320 30 600 150" fill="none"/></defs>
+      <g font-family="'Bungee',Impact,'Arial Black',sans-serif" font-size="96" text-anchor="middle" letter-spacing="3" stroke-linejoin="round" paint-order="stroke">
+        <text transform="translate(0,9)" fill="#B4261C" stroke="#22303A" stroke-width="16"><textPath href="#mcArc" startOffset="50%">MATHCADE</textPath></text>
+        <text fill="url(#mcFill)" stroke="#22303A" stroke-width="16"><textPath href="#mcArc" startOffset="50%">MATHCADE</textPath></text>
+        <text fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2.5" transform="translate(0,-3)"><textPath href="#mcArc" startOffset="50%">MATHCADE</textPath></text>
+      </g></svg>
+    <form id="join" autocomplete="off" novalidate>
+      <input id="code" name="code" maxlength="6" placeholder="Game code" aria-label="Game code" autocapitalize="characters" spellcheck="false" inputmode="text" autofocus>
+      <button type="submit" id="go" aria-label="Join game"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    </form>
+    <p class="msg" id="msg" role="alert"></p>
+  </div>
+</main>
+<main id="home" hidden>
+  <section class="band" aria-labelledby="jh">
+    <h2 id="jh">Join your class game</h2>
+    <form id="join2" autocomplete="off" novalidate>
+      <input id="code2" name="code" maxlength="6" placeholder="Game code" aria-label="Game code" autocapitalize="characters" spellcheck="false" inputmode="text">
+      <button type="submit" id="go2">Join <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M4 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    </form>
+    <p class="msg" id="msg2" role="alert"></p>
+    <div class="waitband" aria-live="polite"><b>You’re in!</b><span class="wcode" id="wcode"></span><span class="wnext">Up next: <b id="wnext"></b></span><span class="wteam2" id="wteam2" hidden></span><button class="wleave" type="button" id="wleave">Leave game</button></div>
+  </section>
+  <div class="hgrid">
+    <section class="player" aria-label="Your player">
+      <div class="ptop"><div class="pname" id="pname"></div><div class="ctile" id="pcoins"></div></div>
+      <div class="stage" id="stage"></div>
+      <nav class="ltabs" aria-label="My locker">
+        <a class="ltab" href="locker.html#base" aria-label="Colours"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c3.5 4.2 6 7.3 6 10.2A6 6 0 0 1 6 13.2C6 10.3 8.5 7.2 12 3z" fill="currentColor"/></svg><span>Colours</span></a>
+        <a class="ltab" href="locker.html#hat" aria-label="Hats"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 15c0-4.4 3.6-8 8-8s8 3.6 8 8z" fill="currentColor"/><rect x="2" y="15" width="20" height="3" rx="1.5" fill="currentColor"/></svg><span>Hats</span></a>
+        <a class="ltab" href="locker.html#skin" aria-label="Costumes"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4.2" y="4" width="15.6" height="11.6" rx="5.6" fill="currentColor"/><rect x="1.6" y="8.6" width="3.6" height="5.4" rx="1.8" fill="currentColor"/><rect x="18.8" y="8.6" width="3.6" height="5.4" rx="1.8" fill="currentColor"/><rect x="7" y="14.6" width="3.6" height="4.6" rx="1" fill="currentColor"/><rect x="13.4" y="14.6" width="3.6" height="4.6" rx="1" fill="currentColor"/><rect x="6.2" y="18.6" width="5.2" height="2.2" rx="1.1" fill="currentColor"/><rect x="12.6" y="18.6" width="5.2" height="2.2" rx="1.1" fill="currentColor"/></svg><span>Costumes</span></a>
+        <a class="ltab" href="locker.html#shoes" aria-label="Shoes"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9h6l2 3 6 1c2.2.4 4 1.7 4 3.5V18H3z" fill="currentColor"/><rect x="3" y="18" width="18" height="2.5" rx="1.2" fill="currentColor" opacity=".55"/></svg><span>Shoes</span></a>
+        <a class="ltab" href="locker.html#fx" aria-label="Hat effects"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l1.8 5.2L19 9l-5.2 1.8L12 16l-1.8-5.2L5 9l5.2-1.8zM19 14l.9 2.6 2.6.9-2.6.9L19 21l-.9-2.6-2.6-.9 2.6-.9z" fill="currentColor"/></svg><span>Effects</span></a>
+        <a class="ltab" href="locker.html#name" aria-label="Name style"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18L9 5h2l5 13h-2.4l-1.2-3.4H7.6L6.4 18zm4.3-5.4h3.4L10 7.6zM17 18v-1.6l3-3.8h-2.8V11H22v1.6l-3 3.8h3V18z" fill="currentColor"/></svg><span>Name</span></a>
+      </nav>
+    </section>
+    <div class="rcol">
+      <section class="waitcard" aria-live="polite">
+        <div class="wpulse" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8" fill="#FFF8EE" stroke="#4A2606" stroke-width="2"/><path d="M12 9v4l3 2M9 2h6" fill="none" stroke="#4A2606" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="wtitle"><span class="wdots">Waiting for your teacher to start</span></div>
+        <div class="wgame" id="wgame"></div>
+        <span class="wteam" id="wteam" hidden></span>
+        <div class="whint">Keep this page open. Your game opens by itself when your teacher presses Start.</div>
+      </section>
+      <div class="tiles">
+        <a class="tile shop" href="shop.html"><svg viewBox="0 0 120 120" aria-hidden="true"><path d="M22 40h76l-6 66H28z" fill="#FFF8EE" stroke="#4a2c22" stroke-width="7" stroke-linejoin="round"/><path d="M42 50V34a18 18 0 0 1 36 0v16" fill="none" stroke="#4a2c22" stroke-width="7" stroke-linecap="round"/><circle cx="60" cy="76" r="13" fill="#FFD23F" stroke="#4a2c22" stroke-width="5"/><path d="M60 70v12" stroke="#B07A06" stroke-width="4" stroke-linecap="round"/></svg>
+          <b>Shop</b><span>Spend your coins on new looks</span></a>
+        <a class="tile locker" href="locker.html"><svg viewBox="0 0 120 120" aria-hidden="true"><rect x="26" y="10" width="68" height="100" rx="10" fill="#FFF8EE" stroke="#0E2A33" stroke-width="7"/><path d="M40 28h40M40 38h40M40 48h40" stroke="#0E2A33" stroke-width="5" stroke-linecap="round"/><rect x="70" y="64" width="10" height="22" rx="4" fill="#FFD23F" stroke="#0E2A33" stroke-width="4"/></svg>
+          <b>Locker</b><span>Choose what you're wearing</span></a>
+        <a class="tile boards" href="leaderboards.html"><svg viewBox="0 0 120 120" aria-hidden="true"><path d="M38 26H22a15 15 0 0 0 18 22M82 26h16a15 15 0 0 1-18 22" fill="none" stroke="#2A1650" stroke-width="7" stroke-linecap="round"/><path d="M36 14h48v30a24 24 0 0 1-48 0z" fill="#FFD23F" stroke="#2A1650" stroke-width="7" stroke-linejoin="round"/><path d="M60 26l4 8 9 1-7 6 2 9-8-5-8 5 2-9-7-6 9-1z" fill="#FFF8EE" stroke="#2A1650" stroke-width="3" stroke-linejoin="round"/><path d="M60 68v14" stroke="#2A1650" stroke-width="8" stroke-linecap="round"/><rect x="36" y="82" width="48" height="24" rx="6" fill="#FFF8EE" stroke="#2A1650" stroke-width="7"/><path d="M46 94h28" stroke="#D9A21F" stroke-width="5" stroke-linecap="round"/></svg>
+          <b>Leaderboards</b><span>The top 10 in every game</span></a>
+        <a class="tile scores" href="account.html"><svg viewBox="0 0 120 120" aria-hidden="true"><rect x="12" y="12" width="96" height="96" rx="14" fill="#FFF8EE" stroke="#4a2c22" stroke-width="7"/><rect x="26" y="66" width="16" height="28" rx="3" fill="#2EC4B6" stroke="#4a2c22" stroke-width="5"/><rect x="52" y="48" width="16" height="46" rx="3" fill="#FF9F2E" stroke="#4a2c22" stroke-width="5"/><rect x="78" y="32" width="16" height="62" rx="3" fill="#FFD23F" stroke="#4a2c22" stroke-width="5"/><path d="M26 44l20-14 14 8 18-16" fill="none" stroke="#4a2c22" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <b>My scores</b><span>Your best result in every game</span></a>
+      </div>
+      <nav class="links" id="hlinks" aria-label="More"></nav>
+    </div>
+  </div>
+  <section id="wplay" aria-label="Warm-up game while you wait">
+    <div class="wframe" id="wframe"><div class="wload"><span class="wdots">Setting up the shooting gallery</span></div></div>
+    <aside class="prizes" aria-label="Prize board">
+      <div class="pz-head">PRIZES</div>
+      <div class="pz-score"><small>Best round</small><b id="pzScore">0</b></div>
+      <ol class="pz-list" id="pzList"></ol>
+      <p class="pz-note" id="pzNote">Shoot targets while you wait. Your best round wins coins when your game starts!</p>
+    </aside>
+  </section>
+</main>
+<div class="wcount" id="wcount" role="status" aria-live="assertive"><div class="wc-in">
+  <div class="wc-t" id="wcT">Your game starts in</div><div class="wc-n" id="wcN">5</div><div class="wc-r" id="wcR"></div></div></div>
+<script src="mathcade-config.js"></script>
+<script src="mathcade-cloud.js"></script>
+<script src="brick.js"></script>
+<script>
+const $ = s => document.querySelector(s), esc = MC.esc;
+/* background tiles */
+(() => {
+  const f = $('#field'), sym = ['+','−','×','÷','=','%','π','√','½','x²'];
+  for(let i = 0; i < 16; i++){
+    const el = document.createElement('i'), s = 60 + Math.random() * 110;
+    el.textContent = sym[i % sym.length];
+    el.style.cssText = `left:${Math.random() * 100}%;width:${s}px;height:${s}px;font-size:${s * 0.42}px;--r0:${Math.random() * 60 - 30}deg;--r1:${Math.random() * 120 - 60}deg;animation-duration:${22 + Math.random() * 26}s;animation-delay:-${Math.random() * 40}s`;
+    f.appendChild(el);
+  }
+})();
+/* who is logged in: visitors get the code box, students get their home */
+let view = null, lastLook = '';
+MC.onUser(u => {
+  const who = $('#who'), home = !!u;
+  document.body.classList.toggle('home', home);
+  $('#home').hidden = !home; $('#out').hidden = home;
+  if(!u){ who.innerHTML = '<a class="tlog" href="teacher.html">Teacher login</a><button class="slog" type="button" id="li">Log in</button>'; $('#li').onclick = () => MC.ui.loginModal(); }
+  else {
+    who.innerHTML = `<button class="chip" type="button" id="me">${MC.nameHTML(u.username, u.look, { title:false })}<span class="coins">${MC.coinSVG(16)}${(u.coins || 0).toLocaleString()}</span></button><button class="lo" type="button" id="lo">Log out</button>`;
+    $('#me').onclick = () => { location.href = 'account.html'; };
+    $('#lo').onclick = async () => { await MC.logout(); MC.ui.toast('Logged out.'); };
+    renderHome(u);
+  }
+  const tl = document.getElementById('hteach');
+  if(u && u.role === 'teacher' && !tl) $('#hlinks').insertAdjacentHTML('beforeend', '<a href="teacher.html" id="hteach"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2" fill="#2EC4B6" stroke="currentColor" stroke-width="2"/><path d="M12 17v4M8 21h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Teacher dashboard</a>');
+  if(!(u && u.role === 'teacher') && tl){ tl.remove(); const hg = document.getElementById('hgames'); if(hg) hg.remove(); }
+});
+function renderHome(u){
+  $('#pname').innerHTML = MC.nameHTML(u.username, u.look, { iconSize:28 });
+  $('#pcoins').innerHTML = `${MC.coinSVG(20)} ${(u.coins || 0).toLocaleString()}`;
+  $('#pcoins').setAttribute('aria-label', (u.coins || 0) + ' coins');
+  const look = Brick.lookOf(u), key = Brick.lookKey(look);
+  if(!view) view = Brick.mount($('#stage'), look, { animate:true, view:{ x0:-20, y0:-45, x1:260, y1:250 } });
+  else if(key !== lastLook) view.set(look);
+  lastLook = key;
+}
+if(MC.token()) MC.refreshMe();
+/* join: the same rules for the visitor box and the home banner */
+function joinForm(form, input, msg, go){
+  input.addEventListener('input', () => { input.value = input.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); msg.textContent = ''; });
+  const nope = text => { msg.textContent = text; form.classList.remove('shake'); void form.offsetWidth; form.classList.add('shake'); input.focus(); };
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const code = input.value.trim();
+    if(!MC.configured()){ nope('Mathcade online isn’t set up yet.'); return; }
+    if(code.length !== 6){ nope('Game codes have 6 letters and numbers.'); return; }
+    if(!MC.token()){ const u = await MC.ui.loginModal({ reason:'Log in to join game ' + code + '.' }); if(!u) return; }
+    go.disabled = true;
+    try{
+      const j = await MC.authed('mc_session_join', { p_code:code });
+      go.disabled = false; input.value = '';
+      afterJoin(j);
+    }catch(ex){ nope(ex.message); go.disabled = false; }
+  });
+}
+const input = $('#code');
+joinForm($('#join'), input, $('#msg'), $('#go'));
+joinForm($('#join2'), $('#code2'), $('#msg2'), $('#go2'));
+/* class games: wait here (no game settings) until the teacher presses Start, then open the game */
+const W = { code:null, game:null, timer:0, settings:{}, counting:false };
+const TEAM_COL = { Alpha:'#2F6FE4', Bravo:'#E4352D', Blue:'#3E7BD6', Red:'#E2483D', Green:'#38B05B', Gold:'#C99A12' };
+function openGame(code, game){ const g = MC.gameById(game); if(!g) return; try{ sessionStorage.removeItem('mc_wait'); }catch(e){} location.href = g.file + '?join=' + encodeURIComponent(code); }
+function afterJoin(j){
+  W.code = j.code; W.game = j.game; W.settings = j.settings || {};
+  if(j.status === 'live'){
+    // reloaded during the countdown with an uncashed warm-up: cash it in on the way
+    if(WG.load(j.code) && WG.totals().answered > 0 && !WG.paid){ document.body.classList.add('waiting'); countdown(j); return; }
+    openGame(j.code, j.game); return;
+  }
+  try{ sessionStorage.setItem('mc_wait', j.code); }catch(e){}
+  document.body.classList.add('waiting');
+  $('#wcode').textContent = j.code;
+  const gname = (MC.gameById(j.game) || {}).name || '';
+  $('#wgame').textContent = gname; $('#wnext').textContent = gname;
+  const t = $('#wteam'), t2 = $('#wteam2');
+  t.hidden = t2.hidden = !j.team;
+  if(j.team){ t.textContent = t2.textContent = 'Team ' + j.team; t.style.background = t2.style.background = TEAM_COL[j.team] || '#5F5A66'; }
+  WG.show(j);
+  poll();
+}
+function stopWaiting(text){
+  clearTimeout(W.timer); W.code = null; W.counting = false; document.body.classList.remove('waiting');
+  try{ sessionStorage.removeItem('mc_wait'); }catch(e){}
+  WG.hide(); $('#wcount').classList.remove('on');
+  if(text) $('#msg2').textContent = text;
+}
+async function poll(){
+  clearTimeout(W.timer); if(!W.code || W.counting) return;
+  try{
+    const s = await MC.authed('mc_session_update', { p_code:W.code });
+    if(!W.code || W.counting) return;
+    if(!s.joined){ stopWaiting('Your teacher took you out of that game.'); return; }
+    if(s.status === 'ended'){ const code = W.code; await cashAndTell(code); stopWaiting('That game has finished. Ask your teacher for the next code.'); return; }
+    if(s.status === 'live'){ countdown(s); return; }
+  }catch(e){ if(e.hint === 'auth'){ stopWaiting(); return; } }
+  W.timer = setTimeout(poll, 1500);
+}
+$('#wleave').onclick = async () => {
+  const code = W.code, b = $('#wleave'); b.disabled = true;
+  try{ await cashAndTell(code); } finally { b.disabled = false; }
+  stopWaiting();
+};
+
+/* ---------- the warm-up game: Carnival Sharpshooter in a frame, best round cashed in for coins ----------
+   The frame (sharpshooter.html?wait=CODE) reports its totals; coins come only from the prize table, paid by the
+   server once per class game (mc_wait_reward), and only if the student answered at least one question. */
+const PRIZES = [[0, 299, 5], [300, 599, 10], [600, 899, 15], [900, 1199, 20], [1200, 1499, 25], [1500, null, 30]];   // must match mc_wait_reward in the SQL
+const tierOf = score => { let k = 0; PRIZES.forEach((p, i) => { if(score >= p[0]) k = i; }); return k; };
+const WG = {
+  code:null, frame:null, failT:0, base:{ best:0, correct:0, answered:0 }, insts:{}, paid:false, result:null, lastTier:-1,
+  key:code => 'mc_waitgame_' + code,
+  load(code){   // totals from earlier on this page (survive a reload while waiting)
+    if(this.code === code) return true;
+    this.code = code; this.insts = {}; this.paid = false; this.result = null; this.base = { best:0, correct:0, answered:0 };
+    try{ const o = JSON.parse(sessionStorage.getItem(this.key(code)) || 'null');
+         if(o){ this.base = { best:+o.best || 0, correct:+o.correct || 0, answered:+o.answered || 0 }; this.paid = !!o.paid; this.result = o.result || null; } }catch(e){}
+    return true;
+  },
+  save(){ if(!this.code) return; const t = this.totals();
+    try{ sessionStorage.setItem(this.key(this.code), JSON.stringify(Object.assign(t, { paid:this.paid, result:this.result }))); }catch(e){} },
+  totals(){
+    const t = Object.assign({}, this.base);
+    Object.values(this.insts).forEach(x => { t.best = Math.max(t.best, x.best | 0); t.correct += x.correct | 0; t.answered += x.answered | 0; });
+    return t;
+  },
+  show(j){
+    this.load(j.code);
+    if(this.frame || W.counting) { this.render(); return; }
+    const st = j.settings || {}, q = new URLSearchParams({ wait:j.code });
+    if(['easy','medium','hard'].includes(st.difficulty)) q.set('diff', st.difficulty);
+    if(st.topic && st.topic !== 'mixed') q.set('topic', st.topic);
+    const f = document.createElement('iframe');
+    f.title = 'Carnival Sharpshooter warm-up'; f.src = 'sharpshooter.html?' + q; f.allow = 'autoplay';
+    f.addEventListener('error', () => this.fail());
+    $('#wframe').appendChild(f); this.frame = f;
+    document.body.classList.add('wplay'); document.body.classList.remove('wready');
+    $('#pzList').innerHTML = PRIZES.map(p => `<li><span>${p[1] == null ? p[0].toLocaleString() + '+' : p[0] + '–' + p[1].toLocaleString()}</span><b>${p[2]} ${MC.coinSVG(16)}</b></li>`).join('');
+    clearTimeout(this.failT); this.failT = setTimeout(() => this.fail(), 15000);   // never loaded: the plain waiting card instead
+    this.render();
+  },
+  fail(){ if(!document.body.classList.contains('wready')) this.hide(); },
+  hide(){
+    clearTimeout(this.failT);
+    if(this.frame){ this.peek(); this.frame.remove(); this.frame = null; }
+    document.body.classList.remove('wplay', 'wready');
+  },
+  peek(){   // read the frame's numbers right now (same site), so the last shot before Start counts
+    try{ const s = this.frame && this.frame.contentWindow.__mcWait && this.frame.contentWindow.__mcWait(); if(s && s.inst) this.insts[s.inst] = s; }catch(e){}
+    this.save();
+  },
+  onMessage(e){
+    if(!this.frame || e.source !== this.frame.contentWindow || e.origin !== location.origin) return;
+    const d = e.data || {};
+    if(d.type === 'mc-wait-ready'){ clearTimeout(this.failT); document.body.classList.add('wready'); }
+    if(d.type === 'mc-wait-state' && d.inst){ this.insts[d.inst] = d; this.save(); this.render(); }
+  },
+  render(){
+    const t = this.totals(), k = tierOf(t.best);
+    $('#pzScore').textContent = t.best.toLocaleString();
+    [...$('#pzList').children].forEach((li, i) => { li.classList.toggle('on', i === k); li.classList.toggle('got', i < k); });
+    const note = this.paid ? 'You’ve already collected your prize for this game. Keep practising!'
+               : !t.answered ? 'Run out of ammo and answer a question to win a prize. Your best round wins coins when your game starts!'
+               : `Prize so far: ${PRIZES[k][2]} coins. Your best round is cashed in when your game starts.`;
+    if($('#pzNote').textContent !== note) $('#pzNote').textContent = note;
+    if(k !== this.lastTier){ this.lastTier = k; }
+  },
+  // cash in once: { coins_awarded, coins_total, tier, score } from the server, or { none } / { already } / { error }
+  async cashIn(){
+    if(!this.code) return { none:true };
+    if(this.frame) this.peek();
+    const t = this.totals();
+    if(this.paid) return Object.assign({ already:true }, this.result || {});
+    if(!t.answered) return { none:true, best:t.best };
+    try{
+      const r = await MC.authed('mc_wait_reward', { p_code:this.code, p_score:t.best, p_correct:t.correct, p_answered:t.answered });
+      this.paid = true; this.result = r; this.save(); this.render();
+      if(MC.user && r.coins_total != null) MC.refreshMe();
+      return r;
+    }catch(ex){
+      if(/already cashed/i.test(ex.message)){ this.paid = true; this.save(); return { already:true }; }
+      return { error:ex.message };
+    }
+  },
+};
+addEventListener('message', e => WG.onMessage(e));
+const coinLine = r => r.coins_awarded > 0 ? `You scored ${(+r.score).toLocaleString()} → <b>+${r.coins_awarded} coins ${MC.coinSVG(26)}</b>`
+  : r.daily_cap_reached ? `You scored ${(+r.score).toLocaleString()}, but today’s coin limit is reached.` : '';
+async function cashAndTell(code){
+  if(!code || WG.code !== code) return;
+  const r = await WG.cashIn();
+  if(r.coins_awarded > 0) MC.ui.toast(`Warm-up prize: you scored <b>${(+r.score).toLocaleString()}</b> → <b>+${r.coins_awarded} coins</b> ${MC.coinSVG(16)}`, { ms:6000 });
+}
+/* the teacher pressed Start: 5, 4, 3, 2, 1 (from the session's start time), cash in, then open the class game */
+function countdown(s){
+  if(W.counting) return; W.counting = true; clearTimeout(W.timer);
+  const code = W.code, game = W.game, offset = s.server_now ? Date.parse(s.server_now) - Date.now() : 0;
+  const startAt = (s.starts_at ? Date.parse(s.starts_at) : Date.now() + offset) - offset;   // local clock
+  const hadGame = !!WG.frame || WG.totals().answered > 0;
+  WG.hide();
+  const gname = (MC.gameById(game) || {}).name || 'Your game';
+  $('#wcT').textContent = gname + ' starts in'; $('#wcR').innerHTML = '';
+  $('#wcount').classList.add('on');
+  let done = !hadGame, shownAt = 0, lastN = null;
+  const cash = hadGame ? WG.cashIn() : Promise.resolve({ none:true });
+  cash.then(r => {
+    let html = '';
+    if(r.coins_awarded != null) html = coinLine(r);
+    else if(r.already) html = 'Warm-up prize already collected for this game.';
+    else if(r.none && hadGame) html = 'Answer a question next time you wait to win coins!';
+    $('#wcR').innerHTML = html; shownAt = html ? Date.now() : 0; done = true;
+  });
+  const step = () => {
+    if(!W.counting) return;
+    const left = startAt - Date.now(), n = Math.max(1, Math.ceil(left / 1000)), el = $('#wcN');
+    if(n !== lastN){ lastN = n; el.textContent = n; el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
+    // leave for the game a moment before zero (it shows its own last second while it loads), once the prize has been shown,
+    // but never hold the class game up by more than a moment if the server is slow
+    const shown = !shownAt || Date.now() - shownAt > 1200;
+    if((left <= 1000 && done && shown) || left < -1500){ el.textContent = '1'; openGame(code, game); return; }   // "1" stays up while the game loads
+    setTimeout(step, 100);
+  };
+  step();
+}
+window.__waitGame = WG;
+(async () => {   // came here from a game link, or the page was reloaded while waiting
+  let code = new URLSearchParams(location.search).get('wait');
+  try{ code = code || sessionStorage.getItem('mc_wait'); }catch(e){}
+  if(!code || !MC.token()) return;
+  try{ afterJoin(await MC.authed('mc_session_join', { p_code:code })); }catch(e){ stopWaiting(e.message); }
+})();
+/* a link like mathcade-site/?code=ABC123 fills the box */
+const pre = new URLSearchParams(location.search).get('code'); if(pre) input.value = $('#code2').value = pre.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+</script>
+</body>
+</html>

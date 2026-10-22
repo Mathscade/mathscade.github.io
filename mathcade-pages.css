@@ -1,0 +1,54 @@
+/* Shared look for the Mathcade website pages (same palette as the games hub) */
+:root{
+  --bg:#13233A; --bg-2:#1D3352; --bg-3:#24406A; --panel:#FF9F2E; --panel-edge:#D9761A; --card:#FFF8EE; --ink:#1E2433; --ink-soft:#5F5A66;
+  --chip:#F6E7D3; --chip-edge:#E2C9A6; --go:#2EC4B6; --go-edge:#1A8C82; --go-text:#0E2A33; --sun:#FFE36B; --sun-edge:#D9A21F;
+  --hot:#FF5A3C; --hot-edge:#B4261C; --cream:#F6F1E7; --hint:#4A2606; --good:#1A8C5A; --bad:#C02A1C;
+  --title:'Chakra Petch','Baloo 2','Trebuchet MS',system-ui,sans-serif; --body:'Baloo 2','Nunito',ui-rounded,'Segoe UI',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--cream);font-family:var(--body);line-height:1.36;-webkit-font-smoothing:antialiased;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cg fill='white' fill-opacity='.05' font-family='Arial' font-weight='700' font-size='34'%3E%3Ctext x='10' y='42'%3E%2B%3C/text%3E%3Ctext x='70' y='42'%3E%C3%97%3C/text%3E%3Ctext x='40' y='102'%3E%C3%B7%3C/text%3E%3Ctext x='96' y='104'%3E%3D%3C/text%3E%3C/g%3E%3C/svg%3E")}
+button{font:inherit;color:inherit;border:0;background:none;padding:0;cursor:pointer}
+:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.wrap{max-width:1100px;margin:0 auto;padding:0 16px 48px}
+h1.pg{font-family:var(--title);font-weight:700;font-size:clamp(1.7rem,4vw,2.6rem);color:var(--sun);letter-spacing:.03em;margin:18px 0 4px;text-shadow:0 4px 0 var(--hot-edge)}
+p.lead{margin:0 0 18px;color:#B9D3DA;font-weight:800}
+.card{background:var(--card);color:var(--ink);border-radius:20px;box-shadow:0 8px 0 rgba(0,0,0,.18);padding:18px}
+.card h2{font-family:var(--title);font-weight:700;font-size:1.45rem;margin:0 0 10px}
+.card h3{font-family:var(--title);font-weight:700;font-size:1.15rem;margin:14px 0 8px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 18px;border-radius:14px;font-weight:900;font-size:1rem;background:var(--go);color:var(--go-text);box-shadow:inset 0 -5px 0 var(--go-edge);text-decoration:none;white-space:nowrap}
+.btn:active{transform:translateY(2px)}
+.btn[disabled]{opacity:.5;cursor:default;transform:none}
+.btn.alt{background:var(--chip);color:var(--ink);box-shadow:inset 0 -5px 0 var(--chip-edge)}
+.btn.hot{background:var(--hot);color:#fff;box-shadow:inset 0 -5px 0 var(--hot-edge)}
+.btn.sun{background:var(--sun);color:var(--hint);box-shadow:inset 0 -5px 0 var(--sun-edge)}
+.btn.sm{padding:7px 11px;font-size:.88rem;border-radius:10px;box-shadow:inset 0 -3px 0 var(--go-edge)}
+.btn.sm.alt{box-shadow:inset 0 -3px 0 var(--chip-edge)}.btn.sm.hot{box-shadow:inset 0 -3px 0 var(--hot-edge)}
+.pills{display:flex;flex-wrap:wrap;gap:6px}
+.pill{padding:8px 13px;border-radius:999px;font-weight:900;font-size:.92rem;background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.14);color:var(--cream)}
+.pill[aria-pressed="true"]{background:var(--sun);border-color:var(--sun);color:var(--hint)}
+.card .pill{background:var(--chip);border-color:var(--chip-edge);color:var(--ink)}
+.card .pill[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--sun)}
+select,input[type=text],input[type=number],input[type=password],input[type=search],textarea{font:inherit;font-weight:800;padding:9px 11px;border-radius:12px;border:2px solid var(--chip-edge);background:#fff;color:var(--ink)}
+textarea{width:100%;min-height:130px;resize:vertical}
+label.fld{display:block;margin:0 0 12px}
+label.fld > span{display:block;font-weight:900;font-size:.88rem;margin-bottom:4px}
+table.lb{width:100%;border-collapse:collapse}
+table.lb th{text-align:left;font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);padding:6px 8px;border-bottom:2px solid var(--chip-edge)}
+table.lb td{padding:9px 8px;border-bottom:1px solid #EFE2CD;font-weight:800;vertical-align:middle}
+table.lb tr.me td{background:#FFF2B8}
+table.lb td.r{width:3.2em;font-family:var(--title);font-size:1.15rem;text-align:center;font-weight:700}
+table.lb td.num,table.lb th.num{text-align:right;font-variant-numeric:tabular-nums}
+table.lb td.big{font-family:var(--title);font-size:1.15rem;font-weight:700}
+.medal{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;color:#fff;font-size:1rem;box-shadow:inset 0 -3px 0 rgba(0,0,0,.2)}
+.m1{background:#E8B020}.m2{background:#9AA8B6}.m3{background:#C7783A}
+.empty{padding:28px 10px;text-align:center;color:var(--ink-soft);font-weight:800}
+.muted{color:var(--ink-soft);font-weight:700;font-size:.9rem}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.grow{flex:1}
+.err{color:var(--bad);font-weight:900}
+.ok{color:var(--good);font-weight:900}
+.notice{background:#FFF2B8;color:var(--hint);border-radius:14px;padding:12px 14px;font-weight:800;margin:0 0 14px}
+@media (max-width:640px){ table.lb .hide-s{display:none} }
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
