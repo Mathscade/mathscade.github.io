@@ -1921,12 +1921,30 @@ addEventListener('keyup',e=>{ const k=KEYS[e.code]; if(k) Input[k]=false; });
 })();
 const frozen=p=>!!p.duel || (p.team==='Z' && Game.left>Game.dur-Game.release);
 /* move with sliding along walls and furniture */
+/* walking that doesn't snag: move on each axis; if a wall, corner or rock still stops you, look a little to each
+   side of the way you're heading for a gap and slip sideways towards it (keeps the same side while you keep pushing) */
+function glideStep(p,nx,ny,free,r){
+  const x0=p.x, y0=p.y, dx=nx-x0, dy=ny-y0, want=Math.hypot(dx,dy);
+  if(free(nx,y0)) p.x=nx; else p.vx=0;
+  if(free(p.x,ny)) p.y=ny; else p.vy=0;
+  if(want<1e-6 || Math.hypot(p.x-x0,p.y-y0)>want*0.6) return;
+  const ux=dx/want, uy=dy/want, px=-uy, py=ux, sides=p.glideSide?[p.glideSide,-p.glideSide]:[1,-1];
+  for(let k=1;k<=12;k++){ const off=r*0.35*k;              // up to about one map square either side
+    for(const s of sides){
+      if(!free(x0+px*off*s+dx,y0+py*off*s+dy)) continue;            // a gap this far to the side
+      const st=Math.min(want,off);
+      // the sideways nudge, or failing that a straight up/down or left/right one (a diagonal nudge can clip the same corner)
+      for(const [sx,sy] of [[x0+px*s*st,y0+py*s*st],[x0,y0+Math.sign(py*s)*st],[x0+Math.sign(px*s)*st,y0]]){
+        if((sx!==x0||sy!==y0) && free(sx,sy)){ p.x=sx; p.y=sy; p.glideSide=s; return; } }
+    }
+  }
+  p.glideSide=0;
+}
 function moveBody(p,dx,dy,dt){
   const sp=(p.team==='Z'?CONFIG.SPEED_Z:CONFIG.SPEED_S); let m=Math.hypot(dx,dy); if(m>1){ dx/=m; dy/=m; m=1; }
   p.vx=dx*sp; p.vy=dy*sp; if(dx) p.face=Math.sign(dx);
   const nx=p.x+p.vx*dt, ny=p.y+p.vy*dt;
-  if(!blocked(nx,p.y)) p.x=nx; else p.vx=0;
-  if(!blocked(p.x,ny)) p.y=ny; else p.vy=0;
+  glideStep(p,nx,ny,(x,y)=>!blocked(x,y),CONFIG.R);
   // before the zombies are let out, they stay inside the quarantine room
   if(p.team==='Z' && Game.left>Game.dur-Game.release){ const q=room('quar'); p.x=clamp(p.x,q.x*T+CONFIG.R,(q.x+q.w)*T-CONFIG.R); p.y=clamp(p.y,q.y*T+CONFIG.R,(q.y+q.h)*T-CONFIG.R); }
 }
@@ -2174,7 +2192,7 @@ $('#play').addEventListener('click',()=>{ Game.mode='solo'; startSolo(); });
 $('#again').addEventListener('click',()=>{ if(Game.mode==='solo'){ $('#over').classList.add('hidden'); $('#setup').classList.remove('hidden'); } });
 window.mcZombieSetDiff=(d,t)=>{ MATHS_DIFF=d; if(t && (t==='mixed'||QBANK.ALL_TOPICS.some(x=>x.id===t))) topicId=t; };
 /* read-only peeks for the tests and the online adapter */
-window.mcZombie={ players, get me(){ return me; }, Game, Duel, Local, CONFIG, ROOMS, HIDE, SOLID, hiddenAt, blocked, spawnSpots, placeAll, begin, finish, newPlayer, UI, rng, room, toast, Net };
+window.mcZombie={ MOVE:{ blocked:(...a)=>blocked(...a), moveBody:(...a)=>moveBody(...a), get W(){ return W; }, get H(){ return H; }, R:CONFIG.R, T }, players, get me(){ return me; }, Game, Duel, Local, CONFIG, ROOMS, HIDE, SOLID, hiddenAt, blocked, spawnSpots, placeAll, begin, finish, newPlayer, UI, rng, room, toast, Net };
 resize(); buildMap(); UI.role(); requestAnimationFrame(frame);
 </script>
 <script src="mathcade-config.js"></script><script src="mathcade-cloud.js"></script><script src="brick.js"></script><script src="adapters/zombie.js"></script>

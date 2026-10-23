@@ -60,6 +60,9 @@ canvas#cv{display:block;width:100%;height:100%;touch-action:none}
 .pk svg{width:40px;height:40px}.pk small{font-weight:900;font-size:.7rem;color:var(--soft)}
 .pk.adv::after{content:'';position:absolute;top:2px;right:2px;width:13px;height:13px;border-radius:50%;background:#B07A3A;border:2px solid var(--ink)}
 .pk:active{transform:translateY(2px)}
+.pk.adv,.seed.adv{background:linear-gradient(180deg,#FFF3C4,#FFD978);box-shadow:inset 0 -4px 0 #D9A630,0 0 0 2px #E8B43A}
+.pk.lock,.seed.lock{filter:grayscale(.85);opacity:.75}
+.pk.lock::before,.seed.lock::before{content:'';position:absolute;left:50%;top:38%;width:22px;height:22px;transform:translate(-50%,-50%);z-index:1;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 11V8a5 5 0 0 1 10 0v3' fill='none' stroke='%2322303A' stroke-width='3'/%3E%3Crect x='4' y='10' width='16' height='12' rx='3' fill='%23FFC23D' stroke='%2322303A' stroke-width='2.5'/%3E%3Ccircle cx='12' cy='16' r='2' fill='%2322303A'/%3E%3C/svg%3E") center/contain no-repeat}
 /* side panel */
 .side{grid-column:2;grid-row:2;background:var(--paper);display:flex;flex-direction:column;min-height:0;overflow-y:auto;border-left:6px solid var(--bg);padding-bottom:calc(52px + env(safe-area-inset-bottom,0px))}
 .side>*{flex-shrink:0}
@@ -142,8 +145,8 @@ select{font:inherit;font-weight:800;padding:8px 10px;border-radius:10px;border:2
     <a class="hubback" id="hubback" href="index.html"  onclick="return confirm('Leave this game and go back to all games?')">← Games</a>
     <div class="hudmid">
       <div class="stat timer" id="sTimer"><small>Time</small><b id="timer">10:00</b></div>
-      <div class="stat sold" id="sSold"><small>Sold</small><b id="sold">$0</b></div>
-      <div class="stat cash" id="sCash"><small>Money</small><b id="cash">$0</b></div>
+      <div class="stat sold" id="sSold" title="Everything you have sold: this is your score"><small>Total sales</small><b id="sold">$0</b></div>
+      <div class="stat cash" id="sCash" title="Money you can spend in the farm shop"><small>To spend</small><b id="cash">$0</b></div>
       <div class="stat bask" id="sBask"><small>Basket</small><b id="bask">0</b></div>
     </div>
     <div class="waterban" id="waterban" role="note">
@@ -1587,6 +1590,8 @@ const CROPS=[
   { id:'banana',     name:'Banana',     plural:'Bananas',     t:120, v:200, adv:true,  water:10, fruit:'#FFE14D', leaf:'#5BBE4F', kind:'palm' },
 ];
 const CROP=Object.fromEntries(CROPS.map(c=>[c.id,c]));
+/* premium fruit (peach, mango, banana) unlock once 3 fruit have been sold (22 Oct 2026): planting them first left students with no money */
+const UNLOCK_SOLD=3;
 const T=CONFIG.T, COLS=CONFIG.COLS, ROWS=CONFIG.ROWS, W=COLS*T, H=ROWS*T;
 const INK='#22303A', BINK='#4a2c22';
 const $=s=>document.querySelector(s);
@@ -1610,14 +1615,17 @@ const SOLIDS=[];   // rectangles in tiles: { x,y,w,h,kind }
   s(23,2,3,2,'coop'); s(29,2,2,3,'windmill'); s(10,8,1,1,'scarecrow'); s(2,18,2,2,'tractor');
   s(10,6,1,1,'hay'); s(17,8,1,1,'hay'); s(24,15,1,1,'hay',{seed:3}); s(12,18,1,1,'hay'); s(31,17,1,1,'hay');
   // a little orchard grove in the corner
-  for(const [x,y] of [[23,17],[25,17],[27,17],[24,19],[26,19],[28,19],[30,19]]) s(x,y,1,1,'tree',{seed:x*3+y,fruit:1});
+  for(const [x,y] of [[23,17],[25,17],[27,17],[24,19],[26,19],[28,19],[30,19]]) s(x,y,1,1,'tree',{seed:x*3+y,fruit:1,round:1});
 })();
 /* the dirt paths (tiles): house → fields → market, the barn, the well, round to the pond */
 const PATHS=[ [[4,5],[4,11.5],[26,11.5]], [[14,5],[14,11.5]], [[19,4],[19,11.5]], [[4,11.5],[4,17.5],[17,17.5]], [[24,4],[24,11.5]] ];
 (function(){
 })();
 const TILE=[...Array(ROWS)].map(()=>Array(COLS).fill(true));   // walkable tiles
-for(const o of SOLIDS) for(let y=o.y;y<o.y+o.h;y++) for(let x=o.x;x<o.x+o.w;x++) TILE[y][x]=false;
+for(const o of SOLIDS) if(!o.round) for(let y=o.y;y<o.y+o.h;y++) for(let x=o.x;x<o.x+o.w;x++) TILE[y][x]=false;
+/* the orchard trees block as circles, not squares, so you slide round them instead of catching on a corner */
+const ROUND=SOLIDS.filter(o=>o.round).map(o=>({ x:(o.x+0.5)*T, y:(o.y+0.55)*T, r:T*0.42 }));
+const WALK=TILE.map((row,y)=>row.map((v,x)=>v && !ROUND.some(c=>Math.hypot((x+0.5)*T-c.x,(y+0.5)*T-c.y)<c.r)));   // tiles you can walk to the middle of (for tap-to-walk)
 /* every patch of land: its state and its crop */
 const PLOTS=[];   // { b:block, tx, ty, state:'grass'|'dug'|'planted', crop, wet, fert, t, ripe }
 for(const b of BLOCKS) for(let y=b.y;y<b.y+b.h;y++) for(let x=b.x;x<b.x+b.w;x++) PLOTS.push({ b, tx:x, ty:y, state:'grass', crop:null, wet:false, fert:false, t:0, ripe:false, fail:0 });
@@ -1626,6 +1634,7 @@ const inMarket=(x,y)=>x>=MARKET.x*T&&x<(MARKET.x+MARKET.w)*T&&y>=MARKET.y*T&&y<(
 function blocked(x,y,r=CONFIG.R){
   if(x<r||y<r||x>W-r||y>H-r) return true;
   for(const [ox,oy] of [[0,0],[r,0],[-r,0],[0,r*0.6],[0,-r*0.6]]){ const tx=Math.floor((x+ox)/T), ty=Math.floor((y+oy)/T); if(ty<0||tx<0||ty>=ROWS||tx>=COLS||!TILE[ty][tx]) return true; }
+  for(const c of ROUND) if(Math.hypot(x-c.x,(y-c.y)*1.3)<c.r+r*0.7) return true;
   return false;
 }
 
@@ -1648,10 +1657,10 @@ function drawGround(g){
   for(let i=0;i<140;i++){ const x=rnd()*W, y=rnd()*H, r=(1.1+rnd()*1.9)*T, dark=rnd()<0.6; g.save(); g.translate(x,y); g.rotate(rnd()*Math.PI); g.scale(1,0.45+rnd()*0.55);
     const gr=g.createRadialGradient(0,0,2,0,0,r); const c=dark?'0,0,0':'255,255,255'; gr.addColorStop(0,`rgba(${c},${dark?0.07:0.06})`); gr.addColorStop(1,`rgba(${c},0)`); g.fillStyle=gr; g.beginPath(); g.arc(0,0,r,0,Math.PI*2); g.fill(); g.restore(); }
   // small faded tufts and clover
-  for(let i=0;i<COLS*ROWS*1.6;i++){ const x=T*0.6+rnd()*(W-T*1.2), y=T*0.8+rnd()*(H-T*1.6), tx=Math.floor(x/T), ty=Math.floor(y/T); if(plotAt(tx,ty)||!TILE[ty][tx]) continue;
+  for(let i=0;i<COLS*ROWS*1.6;i++){ const x=T*0.6+rnd()*(W-T*1.2), y=T*0.8+rnd()*(H-T*1.6), tx=Math.floor(x/T), ty=Math.floor(y/T); if(plotAt(tx,ty)||!WALK[ty][tx]) continue;
     if(rnd()<0.18) clover(g,x,y,rnd); else tuft(g,x,y,0.7+rnd()*0.65,rnd); }
   // flowers now and then
-  for(let i=0;i<COLS*ROWS*0.12;i++){ const x=T+rnd()*(W-2*T), y=T+rnd()*(H-2*T), tx=Math.floor(x/T), ty=Math.floor(y/T); if(plotAt(tx,ty)||!TILE[ty][tx]) continue;
+  for(let i=0;i<COLS*ROWS*0.12;i++){ const x=T+rnd()*(W-2*T), y=T+rnd()*(H-2*T), tx=Math.floor(x/T), ty=Math.floor(y/T); if(plotAt(tx,ty)||!WALK[ty][tx]) continue;
     const c=['#FFF8EE','#FFE36B','#FF9FB5'][Math.floor(rnd()*3)]; for(let k=0;k<5;k++){ g.beginPath(); g.arc(x+Math.cos(k*1.26)*3.5,y+Math.sin(k*1.26)*3.5,2.6,0,Math.PI*2); g.fillStyle=c; g.fill(); } g.beginPath(); g.arc(x,y,2,0,Math.PI*2); g.fillStyle='#FFB028'; g.fill(); }
   drawPaths(g,rnd);
   // the market square (stone)
@@ -1813,21 +1822,29 @@ function drawCrop(g,p,t){
     else if(big){ g.beginPath(); g.ellipse(cx+4,by-r*0.8,5,8,0,0,Math.PI*2); inkFill(g,'#B5487A',1.6); }
     return; }
 }
-/* the little icons above a crop: red when it is missing water or fertiliser, a ring that fills while it grows */
-const ICON={
-  water:(g,x,y)=>{ g.beginPath(); g.moveTo(x,y-7); g.quadraticCurveTo(x+7,y+2,x,y+7); g.quadraticCurveTo(x-7,y+2,x,y-7); g.fillStyle='#fff'; g.fill(); },
-  fert:(g,x,y)=>{ g.beginPath(); g.moveTo(x-6,y-5); g.lineTo(x+6,y-5); g.lineTo(x+5,y+7); g.lineTo(x-5,y+7); g.closePath(); g.fillStyle='#fff'; g.fill(); g.fillStyle='#E2483D'; g.fillRect(x-2,y-1,4,4); },
-};
+/* the little icons on a patch (22 Oct 2026): what it still needs sits in the top middle of the soil (a blue water
+   drop, a red fertiliser bag, side by side); the growth timer and the ripe basket sit in its bottom-left corner */
+function drawDrop(g,x,y,s){ g.save(); g.translate(x,y); g.scale(s,s);
+  g.beginPath(); g.moveTo(0,-15); g.bezierCurveTo(4,-8,12,-1,12,5); g.bezierCurveTo(12,12,6.5,16,0,16); g.bezierCurveTo(-6.5,16,-12,12,-12,5); g.bezierCurveTo(-12,-1,-4,-8,0,-15); g.closePath();
+  g.fillStyle='#3BA7F0'; g.fill(); g.lineWidth=2.5; g.strokeStyle=INK; g.stroke();
+  g.beginPath(); g.ellipse(-4.5,5,2.6,4.4,0.35,0,Math.PI*2); g.fillStyle='rgba(255,255,255,.85)'; g.fill(); g.restore(); }
+function drawFertBadge(g,x,y,s){ g.save(); g.translate(x,y); g.scale(s,s); g.lineJoin='round'; g.strokeStyle=INK;   // a yellow sprout on a mound (stands out on soil and grass)
+  g.beginPath(); g.ellipse(0,12,14,4.8,0,0,Math.PI*2); g.fillStyle='#D99A00'; g.fill(); g.lineWidth=2.5; g.stroke();
+  g.beginPath(); g.moveTo(-2.6,11); g.lineTo(-1.6,-3); g.lineTo(1.6,-3); g.lineTo(2.6,11); g.closePath(); g.fillStyle='#F2B705'; g.fill(); g.lineWidth=2.2; g.stroke();
+  g.beginPath(); g.moveTo(-1,-2.5); g.bezierCurveTo(-4,-10,-10,-12,-15,-13); g.bezierCurveTo(-13,-6,-7,-2.5,-1,-2.5); g.closePath(); g.fillStyle='#FFD84A'; g.fill(); g.stroke();
+  g.beginPath(); g.moveTo(1,-2.5); g.bezierCurveTo(2,-10,7,-14.5,13,-15.5); g.bezierCurveTo(12,-8,7,-4,1,-2.5); g.closePath(); g.fillStyle='#FFD84A'; g.fill(); g.stroke();
+  g.beginPath(); g.ellipse(6.5,-10,1.6,3.2,0.8,0,Math.PI*2); g.fillStyle='rgba(255,255,255,.8)'; g.fill(); g.restore(); }
 function drawBadges(g,p,t){
-  if(p.state!=='planted') return; const c=CROP[p.crop], x=p.tx*T+T/2, top=p.ty*T+(c.kind==='tree'||c.kind==='palm'?-26:-8);
-  if(p.ripe){ const b=Math.sin(t*5)*3; g.beginPath(); g.arc(x,top-4+b,14,0,Math.PI*2); inkFill(g,'#FFC23D',3);
-    g.fillStyle=INK; g.beginPath(); g.moveTo(x-7,top-6+b); g.lineTo(x+7,top-6+b); g.lineTo(x+5,top+4+b); g.lineTo(x-5,top+4+b); g.closePath(); g.fill(); g.strokeStyle=INK; g.lineWidth=2; g.beginPath(); g.arc(x,top-6+b,6,Math.PI,0); g.stroke(); return; }
+  if(p.state!=='planted') return; const c=CROP[p.crop], x0=p.tx*T, y0=p.ty*T;
+  const cx=x0+T/2, topY=y0+17, blX=x0+16, blY=y0+T-16;
+  if(p.ripe){ const b=Math.sin(t*5)*2; g.beginPath(); g.arc(blX,blY+b,13,0,Math.PI*2); inkFill(g,'#FFC23D',3);
+    g.fillStyle=INK; g.beginPath(); g.moveTo(blX-7,blY-2+b); g.lineTo(blX+7,blY-2+b); g.lineTo(blX+5,blY+7+b); g.lineTo(blX-5,blY+7+b); g.closePath(); g.fill(); g.strokeStyle=INK; g.lineWidth=2; g.beginPath(); g.arc(blX,blY-2+b,5.5,Math.PI,0); g.stroke(); return; }
   const need=[]; if(!p.wet) need.push('water'); if(c.adv && !p.fert) need.push('fert');
-  if(need.length){ need.forEach((k,i)=>{ const ix=x+(i-(need.length-1)/2)*30, pulse=1+0.08*Math.sin(t*6); g.save(); g.translate(ix,top-4); g.scale(pulse,pulse);
-      g.beginPath(); g.arc(0,0,13,0,Math.PI*2); inkFill(g,'#E2483D',2.5); ICON[k](g,0,0); g.restore(); }); return; }
-  // the growth timer: a circle counting up
-  const f=clamp(p.t/c.t,0,1); g.beginPath(); g.arc(x,top-4,13,0,Math.PI*2); g.fillStyle='rgba(255,255,255,.92)'; g.fill(); g.strokeStyle=INK; g.lineWidth=2.5; g.stroke();
-  g.beginPath(); g.moveTo(x,top-4); g.arc(x,top-4,10,-Math.PI/2,-Math.PI/2+f*Math.PI*2); g.closePath(); g.fillStyle='#2EAF5A'; g.fill();
+  if(need.length){ const pulse=1+0.08*Math.sin(t*6); need.forEach((k,i)=>{ const ix=cx+(i-(need.length-1)/2)*28;
+      if(k==='water') drawDrop(g,ix,topY,0.85*pulse); else drawFertBadge(g,ix,topY,0.9*pulse); }); return; }
+  // the growth timer: a circle counting up, in the bottom-left corner
+  const f=clamp(p.t/c.t,0,1); g.beginPath(); g.arc(blX,blY,12,0,Math.PI*2); g.fillStyle='rgba(255,255,255,.92)'; g.fill(); g.strokeStyle=INK; g.lineWidth=2.5; g.stroke();
+  g.beginPath(); g.moveTo(blX,blY); g.arc(blX,blY,9,-Math.PI/2,-Math.PI/2+f*Math.PI*2); g.closePath(); g.fillStyle='#2EAF5A'; g.fill();
 }
 const stageOf=p=>{ if(p.state!=='planted') return -1; if(p.ripe) return 4; const c=CROP[p.crop]; if(!growing(p)&&p.t===0) return 0; const f=p.t/c.t; return f<0.2?1:f<0.55?2:3; };
 const growing=p=>p.state==='planted' && !p.ripe && p.wet && (!CROP[p.crop].adv || p.fert);
@@ -1836,6 +1853,18 @@ const HasBrick=()=>typeof window.Brick!=='undefined' && Brick.sprite;
 const sprites=new Map();
 function spriteFor(look){ if(!HasBrick()) return null; const L={...Brick.normalize(look||{}),skin:null,fx:null}, k=Brick.lookKey(L);
   let e=sprites.get(k); if(!e){ e={sp:null}; sprites.set(k,e); Brick.sprite(L,{height:CONFIG.HEIGHT,dpr:Math.min(2,devicePixelRatio||1),fx:false,maxParticles:0}).then(s=>{ e.sp=s; }).catch(()=>{}); } return e.sp; }
+/* where the farmer is going: a dotted trail to the current target, a pin for a tapped walk, and a numbered badge on
+   every plot still waiting in the queue (so students can see why the farmer is walking, and steer to cancel) */
+function drawQueue(g,t){
+  if(!me || Game.state!=='play' || (!Farm.queue.length && !Farm.job)) return;
+  const spot=q=>q.goto?{x:q.goto.x,y:q.goto.y}:q.market?{x:(MARKET.x+1.5)*T,y:(MARKET.y+3.5)*T}:q.p?{x:(q.p.tx+0.5)*T,y:(q.p.ty+0.5)*T}:null;
+  const first=Farm.queue[0]&&spot(Farm.queue[0]);
+  if(first && !Farm.job){ g.save(); g.setLineDash([8,10]); g.lineDashOffset=-t*30; g.lineWidth=4; g.strokeStyle='rgba(255,255,255,.75)'; g.beginPath(); g.moveTo(me.x,me.y); g.lineTo(first.x,first.y); g.stroke(); g.restore(); }
+  Farm.queue.forEach((q,i)=>{ const s=spot(q); if(!s) return;
+    if(q.goto){ const b=Math.sin(t*5)*3; g.save(); g.translate(s.x,s.y-18+b); g.beginPath(); g.moveTo(0,16); g.bezierCurveTo(-14,0,-12,-14,0,-14); g.bezierCurveTo(12,-14,14,0,0,16); g.fillStyle='#FFE36B'; g.fill(); g.lineWidth=3; g.strokeStyle='#22303A'; g.stroke(); g.beginPath(); g.arc(0,-4,4,0,7); g.fillStyle='#22303A'; g.fill(); g.restore(); return; }
+    const x=s.x+T*0.32, y=s.y-T*0.32; g.beginPath(); g.arc(x,y,12,0,7); g.fillStyle=i===0?'#FFE36B':'#FFFFFF'; g.fill(); g.lineWidth=3; g.strokeStyle='#22303A'; g.stroke();
+    g.fillStyle='#22303A'; g.font="900 14px Nunito,sans-serif"; g.textAlign='center'; g.textBaseline='middle'; g.fillText(String(i+1),x,y+1); g.textBaseline='alphabetic'; });
+}
 function drawFarmer(g,p,t){
   const h=CONFIG.HEIGHT, u=h/143, X=gx=>p.x+(gx-120)*u, Y=gy=>p.y-(207-gy)*u, moving=Math.hypot(p.vx,p.vy)>20, facing=Math.abs(p.vx)>20?Math.sign(p.vx):p.face;
   g.fillStyle='rgba(0,0,0,.22)'; g.beginPath(); g.ellipse(p.x,p.y+2,h*0.42,h*0.12,0,0,Math.PI*2); g.fill();
@@ -1870,10 +1899,13 @@ function cropIcon(c){ const f=c.fruit, I='#22303A';
    THE FARM'S STATE AND THE JOBS
    ===================================================================== */
 const Farm={ water:0, cash:0, sold:0, fert:0, basket:[], seed:'strawberry', queue:[], job:null, stats:{correct:0,answered:0,picked:0,soldBy:{}} ,
-  reset(){ this.water=0; this.cash=0; this.sold=0; this.fert=0; this.basket=[]; this.queue=[]; this.job=null; this.seed='strawberry'; this.stats={correct:0,answered:0,picked:0,soldBy:{}};
+  reset(){ this.premiumShown=false; this.water=0; this.cash=0; this.sold=0; this.fert=0; this.basket=[]; this.queue=[]; this.job=null; this.seed='strawberry'; this.stats={correct:0,answered:0,picked:0,soldBy:{}};
     BLOCKS[1].owned=false; for(const p of PLOTS) Object.assign(p,{state:'grass',crop:null,wet:false,fert:false,t:0,ripe:false,fail:0}); }
 };
 /* what tapping a patch will do next */
+const soldCount=()=>Object.values(Farm.stats.soldBy).reduce((a,b)=>a+b,0);
+const premiumOpen=()=>soldCount()>=UNLOCK_SOLD;
+const locked=id=>CROP[id].adv && !premiumOpen();
 function nextJob(p){
   if(!p.b.owned) return null;
   if(p.state==='grass') return 'dig';
@@ -1889,7 +1921,7 @@ function nextJob(p){
 function doJob(p,kind){
   const c=p.crop&&CROP[p.crop];
   if(kind==='dig'){ p.state='dug'; Farm.dugOnce=true; if(!Farm.queue.slice(1).length) Picker.open(p); }
-  else if(kind==='plant'){ p.state='planted'; p.crop=p.plantAs||Farm.seed; p.plantAs=null; p.wet=false; p.fert=false; p.t=0; p.ripe=false; }
+  else if(kind==='plant'){ if(locked(p.plantAs||Farm.seed)){ p.plantAs=null; Farm.seed='strawberry'; lockedToast(); return; } p.state='planted'; p.crop=p.plantAs||Farm.seed; p.plantAs=null; p.wet=false; p.fert=false; p.t=0; p.ripe=false; }
   else if(kind==='water'){ if(Farm.water<c.water){ needWater(p); return; } Farm.water-=c.water; p.wet=true; Pops.add(p.tx*T+T/2,p.ty*T,'-'+c.water+' L','#BFF0FF'); }
   else if(kind==='fert'){ if(Farm.fert<1){ needFert(p); return; } Farm.fert--; p.fert=true; }
   else if(kind==='pick'){ Farm.basket.push(p.crop); Farm.stats.picked++; p.state='dug'; p.crop=null; p.wet=false; p.fert=false; p.t=0; p.ripe=false; Sound.play('pick'); }
@@ -1910,19 +1942,21 @@ function needWater(p){ p.fail=1.2; $('#waterban').classList.remove('flash'); voi
 function needFert(p){ p.fail=1.2; const b=$('#buyFert'); b.classList.remove('flash'); toast('This one needs fertiliser: buy some in the farm shop'); Sound.play('wrong'); }
 function sellBasket(){
   if(!Farm.basket.length) return; let v=0; for(const id of Farm.basket){ v+=CROP[id].v; Farm.stats.soldBy[id]=(Farm.stats.soldBy[id]||0)+1; }
+  const wasOpen=Farm.premiumShown;
   Farm.cash+=v; Farm.sold+=v; Farm.basket=[]; Pops.add(me.x,me.y-CONFIG.HEIGHT-10,'+'+money(v),'#FFE36B'); Sound.play('sell'); UI.all();
+  if(!wasOpen && premiumOpen()){ Farm.premiumShown=true; setTimeout(()=>toast('Premium fruit unlocked: peaches, mangoes and bananas!'),600); }
 }
 /* the planting picker: tap dug soil and the six fruit pop up over it; tap one to plant it there */
 const Picker={ p:null,
-  open(p){ this.p=p; const el=$('#picker'); el.innerHTML=CROPS.map(c=>`<button class="pk${c.adv?' adv':''}" data-id="${c.id}" aria-label="Plant ${c.name}">${cropIcon(c)}<small>${c.t} s</small></button>`).join(''); el.classList.add('show'); this.place(); },
+  open(p){ this.p=p; const el=$('#picker'); el.innerHTML=CROPS.map(c=>`<button class="pk${c.adv?' adv':''}${locked(c.id)?' lock':''}" data-id="${c.id}" aria-label="${locked(c.id)?`${c.name}: locked until you sell ${UNLOCK_SOLD} fruit`:`Plant ${c.name}`}">${cropIcon(c)}<small>${locked(c.id)?`${soldCount()}/${UNLOCK_SOLD}`:c.t+' s'}</small></button>`).join(''); el.classList.add('show'); this.place(); },
   close(){ this.p=null; $('#picker').classList.remove('show'); },
-  choose(id){ const p=this.p; if(!p) return; this.close(); if(p.state!=='dug') return; Farm.seed=id; p.plantAs=id; UI.all(); if(!Farm.queue.some(q=>q.p===p) && Farm.queue.length<12) Farm.queue.push({p}); },
+  choose(id){ const p=this.p; if(!p) return; if(locked(id)){ lockedToast(); return; } this.close(); if(p.state!=='dug') return; Farm.seed=id; p.plantAs=id; UI.all(); if(!Farm.queue.some(q=>q.p===p) && Farm.queue.length<12) Farm.queue.push({p}); },
   place(){ if(!this.p) return; const z=cam.z, el=$('#picker'), sx=(this.p.tx*T+T/2-cam.x)*z+vw/2, sy=(this.p.ty*T+6-cam.y)*z+vh/2, hw=el.offsetWidth/2;
     el.style.left=clamp(sx,hw+6,vw-hw-6)+'px'; el.style.top=Math.max(el.offsetHeight+6,sy)+'px'; } };
 $('#picker').addEventListener('click',e=>{ const b=e.target.closest('.pk'); if(b) Picker.choose(b.dataset.id); });
 /* the nearest tile you can stand on (a tap on a building, a tree or the pond walks you up to it) */
-function nearestFree(tx,ty){ if(TILE[ty]&&TILE[ty][tx]) return [tx,ty]; let best=null, bd=1e9; const mx=Math.floor(me.x/T), my=Math.floor(me.y/T);
-  for(let y=Math.max(0,ty-4);y<=Math.min(ROWS-1,ty+4);y++) for(let x=Math.max(0,tx-4);x<=Math.min(COLS-1,tx+4);x++){ if(!TILE[y][x]) continue; const d=Math.hypot(x-tx,y-ty)+Math.hypot(x-mx,y-my)*0.3; if(d<bd){ bd=d; best=[x,y]; } }
+function nearestFree(tx,ty){ if(WALK[ty]&&WALK[ty][tx]) return [tx,ty]; let best=null, bd=1e9; const mx=Math.floor(me.x/T), my=Math.floor(me.y/T);
+  for(let y=Math.max(0,ty-4);y<=Math.min(ROWS-1,ty+4);y++) for(let x=Math.max(0,tx-4);x<=Math.min(COLS-1,tx+4);x++){ if(!WALK[y][x]) continue; const d=Math.hypot(x-tx,y-ty)+Math.hypot(x-mx,y-my)*0.3; if(d<bd){ bd=d; best=[x,y]; } }
   return best; }
 /* tap a patch: walk there and do its next job (taps queue up, so you can line up several jobs) */
 function tapTile(tx,ty){
@@ -1970,18 +2004,40 @@ addEventListener('keyup',e=>{ const k=KEYS[e.code]; if(k) Input[k]=false; });
   s.addEventListener('pointermove',e=>{ if(e.pointerId===id) move(e); });
   const up=e=>{ if(e.pointerId!==id) return; id=null; Input.sx=Input.sy=0; knob.style.transform=''; }; s.addEventListener('pointerup',up); s.addEventListener('pointercancel',up);
 })();
+/* walking that doesn't snag: move on each axis; if a wall, corner or rock still stops you, look a little to each
+   side of the way you're heading for a gap and slip sideways towards it (keeps the same side while you keep pushing) */
+function glideStep(p,nx,ny,free,r){
+  const x0=p.x, y0=p.y, dx=nx-x0, dy=ny-y0, want=Math.hypot(dx,dy);
+  if(free(nx,y0)) p.x=nx; else p.vx=0;
+  if(free(p.x,ny)) p.y=ny; else p.vy=0;
+  if(want<1e-6 || Math.hypot(p.x-x0,p.y-y0)>want*0.6) return;
+  const ux=dx/want, uy=dy/want, px=-uy, py=ux, sides=p.glideSide?[p.glideSide,-p.glideSide]:[1,-1];
+  for(let k=1;k<=12;k++){ const off=r*0.35*k;              // up to about one map square either side
+    for(const s of sides){
+      if(!free(x0+px*off*s+dx,y0+py*off*s+dy)) continue;            // a gap this far to the side
+      const st=Math.min(want,off);
+      // the sideways nudge, or failing that a straight up/down or left/right one (a diagonal nudge can clip the same corner)
+      for(const [sx,sy] of [[x0+px*s*st,y0+py*s*st],[x0,y0+Math.sign(py*s)*st],[x0+Math.sign(px*s)*st,y0]]){
+        if((sx!==x0||sy!==y0) && free(sx,sy)){ p.x=sx; p.y=sy; p.glideSide=s; return; } }
+    }
+  }
+  p.glideSide=0;
+}
 function moveBody(p,dx,dy,dt){ let m=Math.hypot(dx,dy); if(m<0.05){ p.vx=p.vy=0; return; } if(m>1){ dx/=m; dy/=m; }
   p.vx=dx*CONFIG.SPEED; p.vy=dy*CONFIG.SPEED; if(Math.abs(dx)>0.2) p.face=Math.sign(dx);
-  const nx=p.x+p.vx*dt, ny=p.y+p.vy*dt; if(!blocked(nx,p.y)) p.x=nx; else p.vx=0; if(!blocked(p.x,ny)) p.y=ny; else p.vy=0; }
+  const nx=p.x+p.vx*dt, ny=p.y+p.vy*dt; glideStep(p,nx,ny,(x,y)=>!blocked(x,y),CONFIG.R); }
 const DIST={};
 function bfsFrom(tx,ty){ const key=tx+','+ty; if(DIST[key]) return DIST[key];
   const d=new Int16Array(COLS*ROWS).fill(-1), q=[tx+ty*COLS]; d[q[0]]=0;
-  for(let i=0;i<q.length;i++){ const k=q[i], x=k%COLS, y=(k-x)/COLS; for(const [ox,oy] of [[1,0],[-1,0],[0,1],[0,-1]]){ const nx=x+ox, ny=y+oy; if(nx<0||ny<0||nx>=COLS||ny>=ROWS||!TILE[ny][nx]) continue; const nk=nx+ny*COLS; if(d[nk]>=0) continue; d[nk]=d[k]+1; q.push(nk); } }
+  for(let i=0;i<q.length;i++){ const k=q[i], x=k%COLS, y=(k-x)/COLS; for(const [ox,oy] of [[1,0],[-1,0],[0,1],[0,-1]]){ const nx=x+ox, ny=y+oy; if(nx<0||ny<0||nx>=COLS||ny>=ROWS||!WALK[ny][nx]) continue; const nk=nx+ny*COLS; if(d[nk]>=0) continue; d[nk]=d[k]+1; q.push(nk); } }
   return DIST[key]=d; }
 function walkTo(tx,ty,dt){   // returns true once there
-  if(!(TILE[ty]&&TILE[ty][tx])){ const f=nearestFree(tx,ty); if(!f) return true; tx=f[0]; ty=f[1]; }
+  if(!(WALK[ty]&&WALK[ty][tx])){ const f=nearestFree(tx,ty); if(!f) return true; tx=f[0]; ty=f[1]; }
   const gx=(tx+0.5)*T, gy=(ty+0.5)*T; if(Math.hypot(gx-me.x,gy-me.y)<8){ me.vx=me.vy=0; return true; }
   const x=Math.floor(me.x/T), y=Math.floor(me.y/T); if(x===tx&&y===ty){ moveBody(me,gx-me.x,gy-me.y,dt); return false; }
+  // a clear straight line: just walk it (smooth, and the way the student expects)
+  const dl=Math.hypot(gx-me.x,gy-me.y); let clear=true; for(let s=CONFIG.R;s<dl&&clear;s+=CONFIG.R*0.8){ if(blocked(me.x+(gx-me.x)*s/dl,me.y+(gy-me.y)*s/dl)) clear=false; }
+  if(clear){ moveBody(me,gx-me.x,gy-me.y,dt); return false; }
   const d=bfsFrom(tx,ty); let best=null, bv=d[x+y*COLS]<0?1e9:d[x+y*COLS];
   for(const [ox,oy] of [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]]){ const nx=x+ox, ny=y+oy; if(nx<0||ny<0||nx>=COLS||ny>=ROWS) continue; const v=d[nx+ny*COLS]; if(v<0) continue;
     if(ox&&oy&&(d[x+ox+y*COLS]<0||d[x+(y+oy)*COLS]<0)) continue; if(v<bv){ bv=v; best=[ox,oy]; } }
@@ -2015,11 +2071,12 @@ let toastT=0; function toast(t,s=2.6){ $('#tip').textContent=t; toastT=s; }
 const UI={
   all(){ $('#water').textContent=Farm.water+' L'; $('#cash').textContent=money(Farm.cash); $('#sold').textContent=money(Farm.sold); $('#bask').textContent=Farm.basket.length; $('#fertN').textContent=Farm.fert;
     $('#buyFert').disabled=Farm.cash<CONFIG.FERT_PRICE; const land=BLOCKS[1].owned; $('#buyLand').disabled=!land&&Farm.cash<CONFIG.LAND_PRICE; $('#buyLand').classList.toggle('owned',land); $('#landPrice').textContent=land?'Yours':money(CONFIG.LAND_PRICE);
-    document.querySelectorAll('.seed').forEach(b=>b.classList.toggle('on',b.dataset.id===Farm.seed)); },
+    document.querySelectorAll('.seed').forEach(b=>{ b.classList.toggle('on',b.dataset.id===Farm.seed); const lk=locked(b.dataset.id); b.classList.toggle('lock',lk); const s=b.querySelector('small'); if(s) s.textContent=lk?`Sell ${UNLOCK_SOLD} fruit to unlock (${soldCount()}/${UNLOCK_SOLD})`:`${CROP[b.dataset.id].t} seconds to harvest`; }); },
   timer(){ const s=Math.max(0,Math.ceil(Game.left)); $('#timer').textContent=`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`; $('#sTimer').classList.toggle('low',s<=30); },
 };
 $('#seeds').innerHTML=CROPS.map(c=>`<button class="seed${c.adv?' adv':''}" data-id="${c.id}" aria-label="${c.name}: ${c.t} seconds, sells for ${money(c.v)}${c.adv?', needs 10 litres and fertiliser':', needs 5 litres'}">${cropIcon(c)}<b>${c.plural}</b><small>${c.t} seconds to harvest</small><span class="val">${money(c.v)}</span></button>`).join('');
-$('#seeds').addEventListener('click',e=>{ const b=e.target.closest('.seed'); if(!b) return; Farm.seed=b.dataset.id; UI.all(); });
+$('#seeds').addEventListener('click',e=>{ const b=e.target.closest('.seed'); if(!b) return; if(locked(b.dataset.id)){ lockedToast(); return; } Farm.seed=b.dataset.id; UI.all(); });
+function lockedToast(){ toast(`Premium fruit unlocks once you sell ${UNLOCK_SOLD} fruit (${soldCount()}/${UNLOCK_SOLD}). Grow strawberries, grapes or apples first!`); Sound.play('wrong'); }
 $('#buyFert svg').innerHTML='<path d="M9 8h22l-2 28H11z" fill="#B07A3A" stroke="#22303A" stroke-width="2.5" stroke-linejoin="round"/><path d="M9 8q11 5 22 0" fill="none" stroke="#22303A" stroke-width="2.5"/><circle cx="20" cy="22" r="6" fill="#fff"/><path d="M20 26v-6m0 0q-4-2-4-5m4 5q4-2 4-5" stroke="#2EAF5A" stroke-width="2.2" fill="none" stroke-linecap="round"/>';
 $('#buyLand svg').innerHTML='<rect x="4" y="12" width="32" height="22" rx="4" fill="#9A6A3A" stroke="#22303A" stroke-width="2.5"/><path d="M8 19h24M8 26h24" stroke="#6B4424" stroke-width="2.5"/><path d="M14 12v-6M26 12v-6M10 6h20" stroke="#8A5A2B" stroke-width="3" stroke-linecap="round"/>';
 $('#buyFert').addEventListener('click',()=>{ if(Game.state!=='play'||Farm.cash<CONFIG.FERT_PRICE) return; Farm.cash-=CONFIG.FERT_PRICE; Farm.fert++; Sound.play('pick'); UI.all(); });
@@ -2042,7 +2099,7 @@ function draw(t,dt){
   const z=cam.z=zoom(); if(window.__zoomAll){ cam.x=W/2; cam.y=H/2; } else { const tx=clamp(me.x,Math.min(W/2,vw/2/z),Math.max(W/2,W-vw/2/z)), ty=clamp(me.y,Math.min(H/2,vh/2/z),Math.max(H/2,H-vh/2/z)); const k=cam.snap?1:0.12; cam.snap=false; cam.x+=(tx-cam.x)*k; cam.y+=(ty-cam.y)*k; }
   ctx.save(); ctx.translate(vw/2,vh/2); ctx.scale(z,z); ctx.translate(-cam.x,-cam.y);
   ctx.drawImage(MAP,0,0);
-  drawLand(ctx,t);
+  drawLand(ctx,t); drawQueue(ctx,t);
   // queued patches: a dashed yellow ring
   for(const q of Farm.queue) if(q.p){ const x=q.p.tx*T, y=q.p.ty*T; ctx.strokeStyle='#FFE36B'; ctx.lineWidth=4; ctx.setLineDash([8,6]); ctx.lineDashOffset=-t*20; rr(ctx,x+4,y+4,T-8,T-8,8); ctx.stroke(); ctx.setLineDash([]); }
   for(const p of PLOTS) if(p.fail>0){ p.fail-=dt; ctx.strokeStyle='rgba(226,72,61,'+Math.min(1,p.fail)+')'; ctx.lineWidth=5; rr(ctx,p.tx*T+3,p.ty*T+3,T-6,T-6,8); ctx.stroke(); }
@@ -2094,7 +2151,7 @@ $('#play').addEventListener('click',()=>{ Game.mode='solo'; me.look=window.MC&&M
 $('#again').addEventListener('click',()=>{ if(Game.mode==='solo'){ $('#over').classList.add('hidden'); $('#setup').classList.remove('hidden'); } });
 window.mcFarmSetDiff=(d,t)=>{ MATHS_DIFF=d; if(t && (t==='mixed'||QBANK.ALL_TOPICS.some(x=>x.id===t))) topicId=t; };
 /* read-only peeks for the tests and the online adapter */
-window.mcFarm={ Game, Farm, Quiz, CONFIG, CROPS, CROP, PLOTS, BLOCKS, MARKET, plotAt, tapTile, nextJob, Picker, stageOf, growing, begin, finish, get me(){ return me; }, UI };
+window.mcFarm={ MOVE:{ blocked:(...a)=>blocked(...a), moveBody:(...a)=>moveBody(...a), get W(){ return W; }, get H(){ return H; }, R:CONFIG.R, T }, Game, Farm, Quiz, CONFIG, CROPS, CROP, PLOTS, BLOCKS, MARKET, plotAt, tapTile, nextJob, Picker, stageOf, growing, begin, finish, get me(){ return me; }, UI };
 resize(); buildMap(); UI.all(); requestAnimationFrame(frame);
 </script>
 <script src="mathcade-config.js"></script><script src="mathcade-cloud.js"></script><script src="brick.js"></script><script src="adapters/farm.js"></script>

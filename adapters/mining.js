@@ -10,7 +10,7 @@
   const D = window.DigDeep; if(!D) return;
   const JOIN = (window.MC && MC.classCode && MC.classCode()) || null;
   const DELAY = 300, SEND_MS = 200;
-  let inClass = false, saved = false, conn = null, snapOff = null, name = MC.user ? MC.user.username : null, started = 0;
+  let inClass = false, saved = false, conn = null, board = null, snapOff = null, name = MC.user ? MC.user.username : null, started = 0;
   const remotes = new Map();   // name -> { buf:[{t,x,y,f,w,s,k}], look, seen }
   const $ = s => document.querySelector(s);
 
@@ -39,11 +39,12 @@
   function myState(){
     const p = D.pos; if(!p || D.phase === 'title') return null;
     return { n:name, x:Math.round(p.x * 100) / 100, y:Math.round(p.y * 100) / 100, f:p.facing || 1, w:p.walking ? 1 : 0, s:p.swingT != null ? 1 : 0,
-             k:D.player ? D.player.pickaxeTier : 0, b:(myLook() || {}).key || '', m:D.player ? Math.round(D.player.banked) : 0 };
+             k:D.player ? D.player.pickaxeTier : 0, b:(myLook() || {}).key || '', m:D.player ? Math.round(D.player.banked) : 0, s:board ? board.fields().s : null };
   }
   function send(){ const s = myState(); if(conn && s) conn.send(s); }
   function onSnap(snap){
     if(!snap) return;
+    if(board) board.feed(snap);
     const now = Date.now(), so = now - snap.t; snapOff = snapOff == null ? so : snapOff + (so - snapOff) * 0.1;
     for(const p of snap.p || []){
       if(!p || !p.n || p.n === name || typeof p.x !== 'number') continue;
@@ -60,7 +61,7 @@
   }
   function stepOthers(){
     if(!conn){ requestAnimationFrame(stepOthers); return; }
-    const t = Date.now() - (snapOff || 0) - DELAY, now = Date.now();
+    const t = Date.now() - (snapOff || 0) - MC.live.delay(DELAY, conn), now = Date.now();
     for(const [n, R] of remotes){
       if(now - R.seen > 12000){ D.others.delete(n); continue; }
       const q = posAt(R, t); if(!q) continue;
@@ -87,7 +88,7 @@
       S.minutes = Math.max(1, +s.minutes || 10); S.seconds = Math.max(30, Math.round(ctx.remainingSeconds || S.minutes * 60));
       S.look = myLook();
       $('#title').classList.add('hidden'); $('#againbtn').style.display = 'none'; $('#hubback').style.display = 'none'; $('#overhub').style.display = 'none';
-      const go = () => { D.start(); if(MC.classBoard) MC.classBoard({ score:() => D.player ? D.player.banked : null, lower:false,
+      const go = () => { D.start(); if(MC.classBoard) board = MC.classBoard({ conn:true, score:() => D.player ? D.player.banked : null, lower:false,
         fmt:v => '$' + Math.round(v).toLocaleString('en-AU'), label:'Class leaderboard', pos:{ top:'96px', right:'12px' } }); };
       if(D.world) go(); else addEventListener('load', go);   // (the page builds the map on load)
       if(!conn && JOIN) connect();

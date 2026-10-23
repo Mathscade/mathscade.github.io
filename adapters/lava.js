@@ -85,7 +85,7 @@
   const label = (n, x, y) => { ctx.font = "900 17px Nunito,system-ui,sans-serif"; ctx.textAlign = 'center'; ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(20,30,50,.75)'; ctx.fillStyle = '#fff';
     ctx.strokeText(n, x, y); ctx.fillText(n, x, y); };
   function drawRemotes(t){
-    const hostT = Date.now() - (LIVE.offset || 0) - DELAY, z = Camera.z, list = remotesNow(), many = list.length > 12;
+    const hostT = Date.now() - (LIVE.offset || 0) - MC.live.delay(DELAY, LIVE.conn), z = Camera.z, list = remotesNow(), many = list.length > 12;
     for(const [n, R] of list){
       const p = posAt(R, hostT); if(!p) continue;
       if(p.y < Camera.y - 200 || p.y > Camera.y + vh / z + 200 || p.x < Camera.x - 200 || p.x > Camera.x + vw / z + 200) continue;

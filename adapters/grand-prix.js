@@ -75,7 +75,7 @@
     for(const [n, R] of LIVE.remotes){
       const m = R.meta;
       if(!m || m.r !== LIVE.race || m.tr !== T.def.id || Date.now() - R.seen > 12000 || !R.buf.length){ continue; }
-      const p = sampleAt(R, t + R.off - DELAY); if(!p) continue;
+      const p = sampleAt(R, t + R.off - MC.live.delay(DELAY * 1000, LIVE.conn) / 1000); if(!p) continue;
       const c = R.car || (R.car = ghostCar(n, m)), first = c.prevX == null;
       c.prevX = first ? p.x : c.x; c.prevY = first ? p.y : c.y; c.prevH = first ? p.h : c.h;
       c.x = p.x; c.y = p.y; c.h = p.h; c.prog = p.pg; c.s = T.wrapS(p.pg); c.speed = p.sp;

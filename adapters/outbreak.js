@@ -87,7 +87,7 @@
     step(dt){
       if(!inClass) return;
       if(lastG){ Game.left = Math.max(0, (lastG.end - hostNow()) / 1000); const sinceStart = (hostNow() - lastG.s) / 1000; Game.left = Math.min(Game.left, Game.dur - Math.max(0, sinceStart)); }
-      const t = Date.now() - (snapOff || 0) - DELAY, now = Date.now();   // in the teacher's screen's clock (snapshot times)
+      const t = Date.now() - (snapOff || 0) - MC.live.delay(DELAY, conn), now = Date.now();   // in the teacher's screen's clock (snapshot times)
       for(const [n, R] of remotes){
         const p = players.get(n); if(!p) continue;
         if(now - R.seen > 12000){ p.x = -999; continue; }

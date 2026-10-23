@@ -63,7 +63,7 @@ table.lb .r{width:44px;font-weight:900}
 <script src="brick.js"></script>
 <script>
 const $ = s => document.querySelector(s), esc = MC.esc;
-MCNav.mount($('#nav'), { current:'leaderboards', home:true });
+MCNav.mount($('#nav'), { current:'leaderboards', home:true, homeOnly:true });
 const RULES = {
   'speed-golf':'Lowest time wins. Rounds count when at least 70% of answers are right.',
   'speed-run':'Fastest finish time.', 'lava':'Fastest climb to the top.', 'grand-prix':'Fastest finished race.',

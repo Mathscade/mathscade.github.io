@@ -293,7 +293,7 @@
     const now = serverNow(), m = you();
     if(!m.dead) push(HIST, now, m.x, m.y, m.a, m.turret);
     if(roundOver) netFlags();                                   // keep the flags right while the board shows
-    const T = now - DELAY;
+    const T = now - MC.live.delay(DELAY, NET.conn);   // further behind when snapshots come less often (big classes)
     for(let i = 0; i < tanks.length; i++){
       const t = tanks[i]; if(!t.remote) continue;
       const age = t.lastTs ? now - t.lastTs : Infinity;

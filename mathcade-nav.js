@@ -80,6 +80,8 @@ function mount(el, opts){
   const who = el.querySelector('.who'), teachEls = el.querySelectorAll('.teach');
   MC.onUser(u => {
     teachEls.forEach(t => t.hidden = !(u && u.role === 'teacher'));
+    // homeOnly (leaderboards, 22 Oct 2026): a student's only way out of this page is the Home button
+    if(opts.homeOnly){ const st = !(u && u.role === 'teacher'); el.querySelectorAll('.lk:not(.teach)').forEach(t => t.hidden = st); who.style.display = st ? 'none' : ''; }
     if(!MC.configured()){ who.innerHTML = ''; form.style.display = 'none'; return; }
     if(!u){ who.innerHTML = `<button class="login" type="button">Log in</button>`; who.firstChild.onclick = () => MC.ui.loginModal(); return; }
     who.innerHTML = `<button class="me" type="button" aria-haspopup="menu">${MC.nameHTML(u.username, u.look, { title:false })}<span class="coins">${MC.coinSVG(16)}${(u.coins||0).toLocaleString()}</span></button>`;

@@ -273,15 +273,15 @@ function injectCSS(){
 .mc-step .mc-who>canvas{position:absolute;left:0;top:0;width:100%!important;height:100%!important}   /* a fixed square: on iPad Safari a canvas inside an aspect-ratio box made the box grow and grow */
 .mc-step.p1 .mc-who{transform:scale(1.12);transform-origin:bottom}
 .mc-step .mc-crown{position:absolute;left:-14px;top:-24px;transform:rotate(-18deg);width:clamp(40px,6vw,56px);filter:drop-shadow(0 3px 0 rgba(0,0,0,.35));z-index:2}
-.mc-step .mc-block{position:relative;width:100%;border-radius:16px 16px 8px 8px;display:flex;flex-direction:column;align-items:center;padding-top:12px;color:#3B2300;box-shadow:inset 0 -8px 0 rgba(0,0,0,.18),0 8px 0 rgba(0,0,0,.3)}
-.mc-step.p1 .mc-block{height:170px;background:linear-gradient(180deg,#FFE680,#F2B705);box-shadow:inset 0 -8px 0 rgba(0,0,0,.18),0 8px 0 rgba(0,0,0,.3),0 0 30px rgba(255,210,63,.55)}
-.mc-step.p2 .mc-block{height:150px;background:linear-gradient(180deg,#DCE3EB,#8E9BAB)}
-.mc-step.p3 .mc-block{height:136px;background:linear-gradient(180deg,#F4C18E,#C7783A)}
+.mc-step .mc-block{position:relative;width:100%;border-radius:16px 16px 8px 8px;display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 6px 16px;color:#3B2300;box-shadow:inset 0 -8px 0 rgba(0,0,0,.18),0 8px 0 rgba(0,0,0,.3)}
+.mc-step.p1 .mc-block{min-height:178px;background:linear-gradient(180deg,#FFE680,#F2B705);box-shadow:inset 0 -8px 0 rgba(0,0,0,.18),0 8px 0 rgba(0,0,0,.3),0 0 30px rgba(255,210,63,.55)}
+.mc-step.p2 .mc-block{min-height:160px;background:linear-gradient(180deg,#DCE3EB,#8E9BAB)}
+.mc-step.p3 .mc-block{min-height:146px;background:linear-gradient(180deg,#F4C18E,#C7783A)}
 .mc-step.p1{order:2}.mc-step.p2{order:1}.mc-step.p3{order:3}
 .mc-step .mc-place{position:relative;font-family:'Chakra Petch',Impact,sans-serif;font-weight:700;font-size:2rem;line-height:1}
 .mc-step .mc-place sup{font-size:.4em;vertical-align:top;margin-left:2px}
-.mc-step .mc-foot{position:absolute;left:0;right:0;bottom:18px;display:flex;flex-direction:column;align-items:center;gap:8px}
-.mc-step .mc-pn{font-weight:800;font-size:.8rem;max-width:94%;background:rgba(19,35,58,.88);color:#fff;border-radius:10px;padding:3px 9px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mc-step .mc-foot{position:relative;width:100%;margin-top:auto;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
+.mc-step .mc-pn{font-weight:800;font-size:clamp(.66rem,1.6vw,.8rem);max-width:100%;box-sizing:border-box;background:rgba(19,35,58,.88);color:#fff;border-radius:10px;padding:3px 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mc-step .mc-pn .mc-nm{max-width:100%}
 .mc-step .mc-ps{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:1.3rem;line-height:1;text-align:center;font-variant-numeric:tabular-nums}
 .mc-step .mc-ps small{display:block;margin-top:3px;font-family:'Baloo 2',sans-serif;font-size:.5em;font-weight:800;letter-spacing:.14em;text-transform:uppercase;opacity:.7}
@@ -291,13 +291,19 @@ function injectCSS(){
 @keyframes mcShine{0%{left:-60%}45%,100%{left:130%}}
 .mc-step.me .mc-block::after{content:'YOU';position:absolute;top:-10px;right:-6px;background:#FF3DCB;color:#fff;font-weight:900;font-size:.7rem;letter-spacing:.08em;padding:3px 8px;border-radius:999px;box-shadow:0 2px 0 rgba(0,0,0,.3)}
 .mc-pod.n2 .mc-step.p3,.mc-pod.n1 .mc-step.p2,.mc-pod.n1 .mc-step.p3{display:none}
-.mc-rest{list-style:none;margin:6px 0 0;padding:0;text-align:left;max-height:34vh;overflow:auto;border-top:2px solid #E2C9A6}
-.mc-rest li{display:flex;align-items:center;gap:10px;padding:7px 6px;border-bottom:1px solid #EFE2CD;font-weight:800;counter-increment:mcr}
-.mc-rest li::before{content:counter(mcr) "";color:#5F5A66;min-width:1.6em;text-align:center}
-.mc-rest{counter-reset:mcr 3}
-.mc-rest li span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.mc-rest li b{font-family:'Chakra Petch',sans-serif;font-variant-numeric:tabular-nums}
-.mc-rest li.me{background:#FFF2B8;border-radius:8px}
+.mc-podbtns{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:14px}.mc-podbtns .mc-alt{background:#1E2433;color:#fff}
+.mc-showall{margin:4px auto 0;display:flex;background:#1E2433;color:#fff}
+.mc-rest{margin:10px 0 0;text-align:left;max-height:40vh;overflow:auto;border-top:2px solid #E2C9A6}
+.mc-rest[hidden]{display:none}
+.mc-rh,.mc-rr{display:grid;grid-template-columns:2.2em minmax(0,1fr) 5.2em minmax(4.5em,auto);align-items:center;gap:10px;padding:7px 8px}
+.mc-rh{position:sticky;top:0;background:#FFF8EE;font-size:.72rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#7A6A55;border-bottom:1px solid #EFE2CD}
+.mc-rh span:nth-child(3),.mc-rh span:nth-child(4){text-align:right}
+.mc-rr{border-bottom:1px solid #EFE2CD;font-weight:800}
+.mc-rr .mc-rk{color:#5F5A66;text-align:center}
+.mc-rr .mc-rn{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mc-rr .mc-rc{justify-self:end;display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:999px;background:#FFF2B8;color:#7A4A00;font-weight:900;font-size:.85rem;font-variant-numeric:tabular-nums}
+.mc-rr b{text-align:right;font-family:'Chakra Petch',sans-serif;font-variant-numeric:tabular-nums}
+.mc-rr.me{background:#FFF2B8;border-radius:8px}.mc-rr.me .mc-rc{background:#fff}
 @media (prefers-reduced-motion:reduce){.mc-pod .mc-rays,.mc-step .mc-shine::before{animation:none}}
 .mc-cboard{position:fixed;z-index:2147482000;width:min(230px,42vw);background:rgba(19,35,58,.86);color:#fff;border:2px solid rgba(255,255,255,.18);border-radius:14px;padding:7px 9px 8px;font:800 13px/1.25 'Baloo 2','Nunito',ui-rounded,system-ui,sans-serif;box-shadow:0 6px 18px rgba(0,0,0,.3);cursor:pointer;user-select:none;-webkit-user-select:none;backdrop-filter:blur(3px)}
 .mc-cboard .h{display:flex;align-items:center;gap:6px;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:#FFE36B}
@@ -615,6 +621,7 @@ function endScreen(kind){
 }
 /* The final podium every student sees when the teacher ends the game: the same gold, silver and bronze steps
    as the teacher's screen, then the whole class, with their own row marked. Brick is loaded on demand. */
+const coinsOf = p => p.coins != null ? p.coins : (p.bonus || 0);   // every coin this class game gave them
 async function showPodium(){
   lockDone();
   const old = document.querySelector('.mc-end'); if(old) old.remove();
@@ -628,14 +635,18 @@ async function showPodium(){
   if(!b){ box.innerHTML = `<h2>Game over!</h2><p>Your teacher has ended the game. Look at the big screen for the results!</p><a class="mc-btn" href="${home()}">Back to my home</a>`; return; }
   const g = b.game, ranked = b.players.filter(p => p.score != null), top = ranked.slice(0, 3), SUF = ['st','nd','rd'];
   const unit = g.unit === 's' ? 'time' : (g.score_label || 'points').toLowerCase(), me = SESSION.username;
-  const myRank = ranked.findIndex(p => p.username === me) + 1, myBonus = (ranked.find(p => p.username === me) || {}).bonus || 0;
+  const myRank = ranked.findIndex(p => p.username === me) + 1, myBonus = (ranked.find(p => p.username === me) || {}).bonus || 0; const myCoins = coinsOf(ranked.find(p => p.username === me) || {});
   box.innerHTML = `<h2>Final results</h2><p class="mc-sub">${esc(g.name)}${myRank ? ` · you came <b>${myRank}${myRank <= 3 ? SUF[myRank - 1] : 'th'}</b>` : ''}</p>
-    ${myBonus ? `<p class="mc-bonus">+${myBonus} ${coinSVG(18)} <span>${myRank && myRank <= 3 ? 'for your podium place and finishing' : 'for playing to the end'}</span></p>` : ''}
+    ${myCoins ? `<p class="mc-bonus">+${myCoins} ${coinSVG(18)} <span>earned this game${myBonus ? ` (including +${myBonus} ${myRank && myRank <= 3 ? 'for your podium place' : 'for finishing'})` : ''}</span></p>` : ''}
     ${top.length ? `<div class="mc-pod n${top.length}"><div class="mc-rays"></div>${top.map((p, i) => `<div class="mc-step p${i + 1}${p.username === me ? ' me' : ''}"><div class="mc-who" data-i="${i}"></div>
       <div class="mc-block"><div class="mc-shine"></div>${i === 0 ? '<svg class="mc-crown" viewBox="0 0 64 44" aria-hidden="true"><path d="M6 38 2 8l16 14L32 2l14 20L62 8l-4 30z" fill="#FFD23F" stroke="#4a2c22" stroke-width="4" stroke-linejoin="round"/><circle cx="32" cy="28" r="5" fill="#E4472D" stroke="#4a2c22" stroke-width="3"/><rect x="6" y="36" width="52" height="6" rx="3" fill="#F2B705" stroke="#4a2c22" stroke-width="3"/></svg>' : ''}
-        <div class="mc-place">${i + 1}<sup>${SUF[i]}</sup></div><div class="mc-foot"><div class="mc-pn">${nameHTML(p.username, p.look, { title:false, iconSize:16 })}</div><div class="mc-ps">${fmtScore(g, p.score)}<small>${esc(unit)}</small></div>${p.bonus ? `<div class="mc-pb">+${p.bonus} ${coinSVG(14)}</div>` : ''}</div></div></div>`).join('')}</div>` : '<p>No scores this time.</p>'}
-    ${ranked.length > 3 ? `<ol class="mc-rest" start="4">${ranked.slice(3).map(p => `<li class="${p.username === me ? 'me' : ''}"><span>${nameHTML(p.username, p.look)}</span><b>${fmtScore(g, p.score)}</b></li>`).join('')}</ol>` : ''}
-    <a class="mc-btn" href="${home()}" style="margin-top:14px">Back to my home</a>`;
+        <div class="mc-place">${i + 1}<sup>${SUF[i]}</sup></div><div class="mc-foot"><div class="mc-pn">${nameHTML(p.username, p.look, { title:false, iconSize:16 })}</div><div class="mc-ps">${fmtScore(g, p.score)}<small>${esc(unit)}</small></div><div class="mc-pb" title="Coins earned this game">+${coinsOf(p)} ${coinSVG(14)}</div></div></div></div>`).join('')}</div>` : '<p>No scores this time.</p>'}
+    ${ranked.length > 3 ? `<button type="button" class="mc-btn mc-showall" aria-expanded="false">Show all ${ranked.length} players</button>
+      <div class="mc-rest" hidden><div class="mc-rh"><span>#</span><span>Player</span><span>Coins</span><span>${esc(unit)}</span></div>
+      ${ranked.slice(3).map((p, i) => `<div class="mc-rr${p.username === me ? ' me' : ''}"><span class="mc-rk">${i + 4}</span><span class="mc-rn">${nameHTML(p.username, p.look)}</span><span class="mc-rc">+${coinsOf(p)} ${coinSVG(14)}</span><b>${fmtScore(g, p.score)}</b></div>`).join('')}</div>` : ''}
+    <div class="mc-podbtns"><a class="mc-btn mc-alt" href="${ROOT}leaderboards.html?game=${encodeURIComponent(g.id)}">${'\u{1F3C6}'} Leaderboard</a><a class="mc-btn" href="${home()}">Back to my home</a></div>`;
+  const sa = box.querySelector('.mc-showall');
+  if(sa) sa.addEventListener('click', () => { const r = box.querySelector('.mc-rest'), open = r.hidden; r.hidden = !open; sa.setAttribute('aria-expanded', String(open)); sa.textContent = open ? 'Show top 3 only' : `Show all ${ranked.length} players`; if(open) r.scrollIntoView({ block:'nearest', behavior:'smooth' }); });
   if(top.length){
     try{ if(!window.Brick) await loadScript(ROOT + 'brick.js'); }catch(e){}
     if(window.Brick) box.querySelectorAll('.mc-who').forEach(w => { const p = top[+w.dataset.i]; try{ Brick.mount(w, Brick.normalize((p.look && p.look.brick) || {}), { animate:true, view:{ x0:-30, y0:-80, x1:270, y1:218 } }); }catch(e){} });
@@ -729,6 +740,23 @@ function inSession(){ return !!new URLSearchParams(location.search).get('join');
 /* every class game has a live link: the race / platform / tank games show classmates on the same map,
    and the score games show a live class leaderboard in the corner (MC.classBoard) */
 const LIVE_GAMES = ['speed-run', 'royale', 'ctf', 'lava', 'grand-prix', 'slice-rush', 'sharpshooter', 'speed-golf', 'fishing', 'treasure', 'zombie', 'hideseek', 'outbreak', 'mining'];
+/* MESSAGE BUDGET (22 Oct 2026). Supabase's Free plan allows about 100 live messages a second for the whole project,
+   and every snapshot delivered to every iPad counts. So the teacher's screen works out the rates from the class size:
+   each iPad sends at most `send` updates a second and the screen sends `snap` snapshots a second, with
+   2 x players x send + snap x (players + 2) kept under LIVE_BUDGET. Small classes keep the old rates (5 and 4 a second);
+   a class of 33 runs at about 0.8 each. The screen tells every iPad its send interval in each snapshot (si, ms).
+   iPads whose player is standing still only send a "still here" every few seconds; events (tags, answers, scores)
+   always go straight away. */
+const LIVE_BUDGET = 80;
+function liveRates(players, game){
+  // Supabase counts a student's update twice (sent, then delivered to the screen) and a snapshot once plus once per
+  // device that receives it: 2 x players x send + (players + 2) x snap must stay under the budget
+  const n = Math.max(1, players), each = LIVE_BUDGET / (3 * n + 2);
+  const snap = Math.max(0.5, Math.min(4, each)), send = Math.max(0.5, Math.min(5, (LIVE_BUDGET - (n + 2) * snap) / (2 * n)));
+  const floor = LIVE_RATE[game] || 0;   // score games already go slower than this
+  return { snapMs:Math.max(floor, Math.round(1000 / snap)), sendMs:Math.max(floor ? Math.min(floor, 1000) : 0, Math.round(1000 / send)) };
+}
+const MOTION_KEYS = new Set(['x', 'y', 'vx', 'vy', 'f', 'd', 'w', 's', 'a', 'v', 'z', 'facing', 'k', 'l', 't']);
 /* how often the teacher's screen sends the combined snapshot (ms): score-only games need far fewer messages */
 const LIVE_RATE = { 'slice-rush':1000, sharpshooter:1000, 'speed-golf':1000, fishing:1000, treasure:1000 };
 /* games whose live battle needs a referee on the teacher's screen (adapters/<game>-referee.js) */
@@ -776,37 +804,80 @@ class LiveSocket {
   onMessage(m){
     const name = (m.topic || '').replace(/^realtime:/, ''), t = this.topics.get(name); if(!t) return;
     if(m.event === 'phx_reply' && m.ref === t.joinRef){
-      if(m.payload && m.payload.status === 'ok'){ t.joined = true; t.resolve && t.resolve(); }
+      if(m.payload && m.payload.status === 'ok'){ t.joined = true; t.ever = true; this.setStatus('open'); t.resolve && t.resolve(); }
+      else if(t.ever){ this.rejoin(name, t); }   // refused while getting back in after a cut: keep trying
       else { this.setStatus('refused'); t.reject && t.reject(new Error('join refused: ' + JSON.stringify(m.payload && m.payload.response))); }
       return;
     }
     if(m.event === 'broadcast' && m.payload) try{ t.onBroadcast(m.payload.event, m.payload.payload); }catch(e){ console.error(e); }
+    // Supabase closed or errored this channel (e.g. "too many messages per second"): rejoin it after a short wait
+    // instead of going quiet for the rest of the game (22 Oct 2026)
+    const sysErr = m.event === 'system' && m.payload && m.payload.status === 'error';
+    if(m.event === 'phx_error' || m.event === 'phx_close' || sysErr) this.rejoin(name, t);
   }
+  rejoin(name, t){
+    if(this.closed || t.rejoining) return; t.joined = false; t.rejoining = true; this.setStatus('reconnecting');
+    setTimeout(() => { t.rejoining = false; if(this.closed) return; if(this.ws && this.ws.readyState === 1) this.sendJoin(name, t); else this.connect().catch(() => {}); }, 1500 + Math.random() * 1500);
+  }
+  /* the link has gone quiet: rejoin every channel, or reopen the whole connection if it is dead */
+  kick(){ if(this.closed) return; if(this.ws && this.ws.readyState === 1){ for(const [name, t] of this.topics) this.rejoin(name, t); } else this.connect().catch(() => {}); }
   send(name, event, payload){ const t = this.topics.get(name); if(!t || !t.joined) return false;
     this.raw({ topic:'realtime:' + name, event:'broadcast', payload:{ type:'broadcast', event, payload }, ref:String(++this.ref), join_ref:t.joinRef }); return true; }
   close(){ this.closed = true; clearInterval(this.hb); try{ this.ws && this.ws.close(); }catch(e){} }
 }
-let postBusy = false;
+/* a small note at the top of a student's screen while the live link to the teacher's screen is being restored */
+let badgeEl = null;
+function badge(on){
+  if(!on){ if(badgeEl) badgeEl.style.display = 'none'; return; }
+  if(!badgeEl){ badgeEl = document.createElement('div'); badgeEl.className = 'mc-ui'; badgeEl.setAttribute('role', 'status');
+    badgeEl.textContent = 'Reconnecting to your teacher\u2019s screen\u2026';
+    Object.assign(badgeEl.style, { position:'fixed', left:'50%', top:'calc(10px + env(safe-area-inset-top,0px))', transform:'translateX(-50%)', zIndex:9999,
+      background:'#FFE36B', color:'#4A2606', font:"800 15px 'Baloo 2',system-ui,sans-serif", padding:'6px 14px', borderRadius:'999px', boxShadow:'0 3px 0 #D9A21F', pointerEvents:'none' });
+    (document.body || document.documentElement).appendChild(badgeEl); }
+  badgeEl.style.display = 'block';
+}
+let postBusy = false, postWait = 0;
 async function livePost(name, event, payload){
-  if(postBusy) return false;                       // never queue up: a newer update replaces a slow one
+  if(postBusy || Date.now() < postWait) return false;   // never queue up: a newer update replaces a slow one
   postBusy = true;
   const headers = { 'Content-Type':'application/json', apikey:CFG.supabaseKey || 'dev' };
   if(jwtKey()) headers.Authorization = 'Bearer ' + jwtKey();
   try{ const r = await fetch(baseUrl() + '/realtime/v1/api/broadcast', { method:'POST', headers,
-         body:JSON.stringify({ messages:[{ topic:name, event, payload, private:false }] }) }); return r.ok; }
+         body:JSON.stringify({ messages:[{ topic:name, event, payload, private:false }] }) });
+       if(r.status === 429) postWait = Date.now() + 2000 + Math.random() * 1000;   // over the limit: wait a moment
+       return r.ok; }
   catch(e){ return false; } finally{ postBusy = false; }
 }
 const live = {
   games:LIVE_GAMES,
+  rates:liveRates, budget:LIVE_BUDGET,
   supported:id => LIVE_GAMES.includes(id),
   topics:code => ({ in:'mc-' + code + '-in', out:'mc-' + code + '-out' }),
   /* student side: onSnapshot(snapshot) gets { t, p:[players], g? } from the teacher's screen (g: the referee's shared game state) */
   async player(code, onSnapshot, onStatus){
     const T = live.topics(code), sock = new LiveSocket(); sock.onStatus = onStatus;
-    try{ await sock.join(T.out, (ev, data) => { if(ev === 'snap') onSnapshot(data); }); }
+    const L = { si:200, last:0, lastSnap:0, gaps:[], sent:null, sentAt:0 };
+    try{ await sock.join(T.out, (ev, data) => { if(ev !== 'snap' || !data) return; const now = Date.now();
+      if(L.lastSnap){ L.gaps.push(now - L.lastSnap); if(L.gaps.length > 12) L.gaps.shift(); }
+      L.lastSnap = now; if(data.si) L.si = data.si; badge(false); onSnapshot(data); }); }
     catch(e){ sock.close(); throw e; }
-    return { send:state => livePost(T.in, 'state', state), close:() => sock.close(), get status(){ return sock.status; } };
+    // watchdog: no snapshot for a while means the link dropped; rejoin, and tell the student what is happening
+    const dog = setInterval(() => { if(!L.lastSnap) return; const q = Date.now() - L.lastSnap;
+      if(q > 4000) badge(true); if(q > 6000 && q < 6000 + 2100) sock.kick(); if(q > 15000 && (q % 15000) < 2100) { try{ sock.ws && sock.ws.close(); }catch(e){} } }, 2000);
+    return {
+      // throttled to the screen's send interval; a still player only sends every 3 s; anything else that changed goes now
+      send(state){ const now = Date.now(); if(!state) return false;
+        let event = false, moved = false; const prev = L.sent || {};
+        for(const k in state){ if(JSON.stringify(state[k]) === JSON.stringify(prev[k])) continue; if(MOTION_KEYS.has(k)) moved = true; else event = true; }
+        if(!event){ if(now - L.sentAt < (moved ? L.si : 3000)) return false; }
+        else if(now - L.sentAt < 150) return false;
+        L.sent = state; L.sentAt = now; return livePost(T.in, 'state', state); },
+      close(){ clearInterval(dog); sock.close(); badge(false); }, get status(){ return sock.status; },
+      get delayMs(){ return L.gaps.length ? Math.max(...L.gaps.slice(-6)) : 0; } };
   },
+  /* how far behind to draw classmates (ms) so movement stays smooth: at least the game's own delay, and more when
+     snapshots come less often (a big class) */
+  delay(base, conn){ const g = conn && conn.delayMs; return Math.max(base, g ? g + 150 : 0); },
   referees,
   /* teacher side: relays everyone's latest state as one snapshot, 4 times a second.
      opts (optional): { game, now() (server clock), board() (the latest session board) }. For a game with a
@@ -814,24 +885,30 @@ const live = {
   async host(code, onPlayers, opts){
     opts = opts || {};
     const T = live.topics(code), sock = new LiveSocket(), latest = new Map();
-    let ref = null;
+    let ref = null, lastIn = Date.now(), rates = liveRates(1, opts.game), timer = 0;
     if(opts.game && LIVE_REFEREES.includes(opts.game)){
       if(!referees[opts.game]) await loadScript(ROOT + 'adapters/' + opts.game + '-referee.js');
       if(referees[opts.game]) ref = referees[opts.game]({ code, now:opts.now || Date.now, board:opts.board || (() => null) });
     }
     try{
-      await sock.join(T.in, (ev, data) => { if(ev === 'state' && data && data.n) latest.set(data.n, Object.assign({ at:Date.now() }, data)); });
+      await sock.join(T.in, (ev, data) => { if(ev === 'state' && data && data.n){ lastIn = Date.now(); latest.set(data.n, Object.assign({ at:Date.now() }, data)); } });
       await sock.join(T.out, () => {});
     }catch(e){ sock.close(); throw e; }
-    const timer = setInterval(() => {
+    const tick = () => {
       const now = Date.now(), p = [];
       for(const [n, s] of latest){ if(now - s.at > 15000) latest.delete(n); else { const c = Object.assign({}, s); delete c.at; p.push(c); } }
       let g = null;
       if(ref) try{ g = ref.tick(latest, now); }catch(e){ console.error(e); }
-      if(p.length || g) sock.send(T.out, 'snap', g ? { t:now, p, g } : { t:now, p });
+      if(p.length || g){ const snap = g ? { t:now, p, g } : { t:now, p }; snap.si = rates.sendMs; sock.send(T.out, 'snap', snap); }
       if(onPlayers) try{ onPlayers(p); }catch(e){}
-    }, (opts.game && LIVE_RATE[opts.game]) || 250);
-    return { close(){ clearInterval(timer); sock.close(); }, get status(){ return sock.status; }, get count(){ return latest.size; },
+      // re-plan the rates for the class size, and rejoin if the students have gone quiet for a while
+      const want = liveRates(latest.size, opts.game);
+      if(want.snapMs !== rates.snapMs){ rates = want; clearInterval(timer); timer = setInterval(tick, rates.snapMs); }
+      else rates = want;
+      if(latest.size && now - lastIn > 8000){ lastIn = now; sock.kick(); }
+    };
+    timer = setInterval(tick, rates.snapMs);
+    return { close(){ clearInterval(timer); sock.close(); }, get status(){ return sock.status; }, get count(){ return latest.size; }, get rates(){ return rates; },
              get info(){ try{ return ref && ref.info ? ref.info() : ''; }catch(e){ return ''; } },
              get teams(){ try{ return ref && ref.teams ? ref.teams() : null; }catch(e){ return null; } } };
   },

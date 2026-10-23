@@ -1607,6 +1607,7 @@ const CONFIG={
   BATT_START:30, BATT_MAX:60, PER_RIGHT:10,   // torch battery (seconds): at the start, the most it holds, per right answer
   TORCH:240,             // px: how far a human's torch lights
   ZOMBIE_SIGHT:200,      // px: how far a zombie sees round itself (plus the whole room it is in)
+  ZOMBIE_ROOM:0.38,      // how much of the dark a zombie sees through in the room it is in (22 Oct 2026: was 0.82, which lit the whole room)
   DARK_OUT:0.86, DARK_IN:0.95,   // how dark it is outdoors (a little moonlight) and indoors
   SURVIVE_COINS:20,      // coins for surviving the night (a class game)
 };
@@ -1982,12 +1983,30 @@ addEventListener('keyup',e=>{ const k=KEYS[e.code]; if(k) Input[k]=false; });
 })();
 const held=p=>p.team==='Z' && Game.left>Game.dur-Game.release;
 const frozen=p=>!!p.duel || held(p);
+/* walking that doesn't snag: move on each axis; if a wall, corner or rock still stops you, look a little to each
+   side of the way you're heading for a gap and slip sideways towards it (keeps the same side while you keep pushing) */
+function glideStep(p,nx,ny,free,r){
+  const x0=p.x, y0=p.y, dx=nx-x0, dy=ny-y0, want=Math.hypot(dx,dy);
+  if(free(nx,y0)) p.x=nx; else p.vx=0;
+  if(free(p.x,ny)) p.y=ny; else p.vy=0;
+  if(want<1e-6 || Math.hypot(p.x-x0,p.y-y0)>want*0.6) return;
+  const ux=dx/want, uy=dy/want, px=-uy, py=ux, sides=p.glideSide?[p.glideSide,-p.glideSide]:[1,-1];
+  for(let k=1;k<=12;k++){ const off=r*0.35*k;              // up to about one map square either side
+    for(const s of sides){
+      if(!free(x0+px*off*s+dx,y0+py*off*s+dy)) continue;            // a gap this far to the side
+      const st=Math.min(want,off);
+      // the sideways nudge, or failing that a straight up/down or left/right one (a diagonal nudge can clip the same corner)
+      for(const [sx,sy] of [[x0+px*s*st,y0+py*s*st],[x0,y0+Math.sign(py*s)*st],[x0+Math.sign(px*s)*st,y0]]){
+        if((sx!==x0||sy!==y0) && free(sx,sy)){ p.x=sx; p.y=sy; p.glideSide=s; return; } }
+    }
+  }
+  p.glideSide=0;
+}
 function moveBody(p,dx,dy,dt){
   const sp=(p.team==='Z'?CONFIG.SPEED_Z:CONFIG.SPEED_H); let m=Math.hypot(dx,dy); if(m<0.05){ p.vx=p.vy=0; return; } if(m>1){ dx/=m; dy/=m; }
   p.vx=dx*sp; p.vy=dy*sp; if(Math.abs(dx)>0.2) p.face=Math.sign(dx); p.dir=Math.atan2(dy,dx);
   const nx=p.x+p.vx*dt, ny=p.y+p.vy*dt;
-  if(!blocked(nx,p.y)) p.x=nx; else p.vx=0;
-  if(!blocked(p.x,ny)) p.y=ny; else p.vy=0;
+  glideStep(p,nx,ny,(x,y)=>!blocked(x,y),CONFIG.R);
 }
 function stepMe(dt){ if(!me) return; if(frozen(me)){ me.vx=me.vy=0; return; }
   moveBody(me,(Input.right?1:0)-(Input.left?1:0)+Input.sx,(Input.down?1:0)-(Input.up?1:0)+Input.sy,dt); }
@@ -2165,7 +2184,7 @@ function drawDark(){
   for(const L of LAMPS) hole(L.x,L.y,150,0.3);
   for(const p of players.values()){ if(p.team==='H' && p.torch) hole(p.x,p.y-20,CONFIG.TORCH,0.95); }
   if(me.team==='Z'){ const r=roomAt(Math.floor(me.x/T),Math.floor(me.y/T));
-    if(r){ const [px,py]=S((r.x-0.5)*T,(r.y-0.5)*T); dk.fillStyle='rgba(0,0,0,.82)'; dk.fillRect(px,py,(r.w+1)*T*zs,(r.h+1)*T*zs); }
+    if(r){ const [px,py]=S((r.x-0.5)*T,(r.y-0.5)*T); dk.fillStyle=`rgba(0,0,0,${CONFIG.ZOMBIE_ROOM})`; dk.fillRect(px,py,(r.w+1)*T*zs,(r.h+1)*T*zs); }
     hole(me.x,me.y-20,CONFIG.ZOMBIE_SIGHT,0.95); }
   else hole(me.x,me.y-20,me.torch?CONFIG.TORCH:70,me.torch?1:0.55);
   dk.globalCompositeOperation='source-over';
@@ -2239,7 +2258,7 @@ $('#topic').addEventListener('change',e=>topicId=e.target.value);
 $('#play').addEventListener('click',()=>{ Game.mode='solo'; startSolo(); });
 $('#again').addEventListener('click',()=>{ if(Game.mode==='solo'){ $('#over').classList.add('hidden'); $('#setup').classList.remove('hidden'); } });
 window.mcOutbreakSetDiff=(d,t)=>{ MATHS_DIFF=d; if(t && (t==='mixed'||QBANK.ALL_TOPICS.some(x=>x.id===t))) topicId=t; };
-window.mcOutbreak={ HIDE, hideAt, hidden, PEEK, players, get me(){ return me; }, Game, Duel, Local, Quiz, Torch, Panel, CONFIG, ROOMS, SOLID, TILE, DOORS, FIELD, PARK, BLD, tileAt, roomAt, blocked, humanSpots, zombieSpots, placeAll, begin, finish, newPlayer, infect, UI, rng, room, toast, Net, zombieSees };
+window.mcOutbreak={ MOVE:{ blocked:(...a)=>blocked(...a), moveBody:(...a)=>moveBody(...a), get W(){ return W; }, get H(){ return H; }, R:CONFIG.R, T }, HIDE, hideAt, hidden, PEEK, players, get me(){ return me; }, Game, Duel, Local, Quiz, Torch, Panel, CONFIG, ROOMS, SOLID, TILE, DOORS, FIELD, PARK, BLD, tileAt, roomAt, blocked, humanSpots, zombieSpots, placeAll, begin, finish, newPlayer, infect, UI, rng, room, toast, Net, zombieSees };
 resize(); buildMap(); UI.role(); Torch.show(); requestAnimationFrame(frame);
 </script>
 <script src="mathcade-config.js"></script><script src="mathcade-cloud.js"></script><script src="brick.js"></script><script src="adapters/outbreak.js"></script>

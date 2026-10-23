@@ -77,7 +77,7 @@
       Game.left = Math.max(0, (g.end - hn) / 1000);
       const r = Math.max(0, Math.floor((hn - g.s) / g.rl));
       if(r !== Game.round && hn < g.end) Z.newRound(r, Game.round < 0);
-      const t = Date.now() - (snapOff || 0) - DELAY, now = Date.now();
+      const t = Date.now() - (snapOff || 0) - MC.live.delay(DELAY, conn), now = Date.now();
       for(const [n, R] of remotes){
         const p = players.get(n); if(!p) continue;
         if(now - R.seen > 12000){ p.x = -999; continue; }

@@ -276,7 +276,7 @@
     const now = serverNow(), me = you();
     if(me.alive && !me.spectator) push(HIST, now, me.x, me.y, me.a, me.turret);
     if(NET.spectator && mode === 'drive') setMode('over');
-    const T = now - DELAY;
+    const T = now - MC.live.delay(DELAY, NET.conn);   // further behind when snapshots come less often (big classes)
     for(let i = 0; i < tanks.length; i++){
       const t = tanks[i]; if(!t.remote) continue;
       t.stale = !t.lastTs || now - t.lastTs > 5000;

@@ -73,7 +73,7 @@
     return R.spr || null;
   }
   function drawRemotes(t){
-    const hostT = Date.now() - (LIVE.offset || 0) - DELAY, z = Camera.z, list = remotesNow(), many = list.length > 12;
+    const hostT = Date.now() - (LIVE.offset || 0) - MC.live.delay(DELAY, LIVE.conn), z = Camera.z, list = remotesNow(), many = list.length > 12;
     for(const [n, R] of list){
       const p = posAt(R, hostT); if(!p) continue;
       if(p.x < Camera.x - 200 || p.x > Camera.x + vw / z + 200) continue;
